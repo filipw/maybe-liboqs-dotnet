@@ -1,0 +1,4 @@
+[submodule "liboqs"]
+	path = liboqs
+	url = https://github.com/Open-Quantum-Safe/liboqs.git
+	branch = 0.13.0
