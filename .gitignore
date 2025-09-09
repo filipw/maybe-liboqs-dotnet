@@ -22,3 +22,4 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+src/native/liboqs.so.0.13.0
