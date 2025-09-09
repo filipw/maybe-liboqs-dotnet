@@ -35,6 +35,42 @@ jobs:
           src/native/runtimes/linux-x64/native/liboqs.so*
         retention-days: 7
 
+  build-linux-arm64:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up ARM64 cross-compilation
+      run: |
+        sudo apt update
+        sudo apt install -y cmake build-essential gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libssl-dev:arm64
+        sudo dpkg --add-architecture arm64
+        sudo apt update
+        sudo apt install -y libssl-dev:arm64
+    
+    - name: Build liboqs for Linux ARM64
+      run: |
+        chmod +x build-dotnet-liboqs-linux.sh
+        CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ ./build-dotnet-liboqs-linux.sh Release ./src/native/runtimes/linux-arm64/native
+      env:
+        CMAKE_TOOLCHAIN_FILE: |
+          set(CMAKE_SYSTEM_NAME Linux)
+          set(CMAKE_SYSTEM_PROCESSOR aarch64)
+          set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
+          set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
+    
+    - name: Upload Linux ARM64 artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: liboqs-linux-arm64
+        path: |
+          src/native/runtimes/linux-arm64/native/liboqs.so*
+        retention-days: 7
+
   build-windows-x64:
     runs-on: windows-latest
     
@@ -83,8 +119,34 @@ jobs:
           src/native/runtimes/win-arm64/native/*.dll
         retention-days: 7
 
+  build-macos-arm64:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        brew install cmake openssl
+    
+    - name: Build liboqs for macOS ARM64
+      run: |
+        chmod +x build-dotnet-liboqs-macos.sh
+        ./build-dotnet-liboqs-macos.sh Release ./src/native
+    
+    - name: Upload macOS ARM64 artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: liboqs-macos-arm64
+        path: |
+          src/native/*.dylib*
+        retention-days: 7
+
   test-builds:
-    needs: [build-linux, build-windows-x64, build-windows-arm64]
+    needs: [build-linux, build-linux-arm64, build-windows-x64, build-windows-arm64, build-macos-arm64]
     runs-on: ubuntu-latest
     
     steps:
@@ -114,7 +176,7 @@ jobs:
 
   create-release-package:
     if: github.ref == 'refs/heads/main'
-    needs: [build-linux, build-windows-x64, build-windows-arm64]
+    needs: [build-linux, build-linux-arm64, build-windows-x64, build-windows-arm64, build-macos-arm64]
     runs-on: ubuntu-latest
     
     steps:
@@ -126,13 +188,17 @@ jobs:
     - name: Create release package
       run: |
         mkdir -p release/runtimes/linux-x64/native
+        mkdir -p release/runtimes/linux-arm64/native
         mkdir -p release/runtimes/win-x64/native
         mkdir -p release/runtimes/win-arm64/native
+        mkdir -p release/runtimes/osx-arm64/native
         
         # Copy artifacts maintaining the runtime structure
         cp -r artifacts/liboqs-linux-x64/* release/runtimes/linux-x64/native/ || true
+        cp -r artifacts/liboqs-linux-arm64/* release/runtimes/linux-arm64/native/ || true
         cp -r artifacts/liboqs-windows-x64/* release/runtimes/win-x64/native/ || true
         cp -r artifacts/liboqs-windows-arm64/* release/runtimes/win-arm64/native/ || true
+        cp -r artifacts/liboqs-macos-arm64/* release/runtimes/osx-arm64/native/ || true
         
         # Create archive
         tar -czf liboqs-native-libraries.tar.gz -C release .

@@ -22,9 +22,11 @@
     <!-- Runtime-specific native libraries for NuGet packaging -->
     <Content Include="../native/runtimes/win-x64/native/oqs.dll" Condition="Exists('../native/runtimes/win-x64/native/oqs.dll')" Pack="true" PackagePath="runtimes/win-x64/native/oqs.dll" />
     <Content Include="../native/runtimes/win-arm64/native/oqs.dll" Condition="Exists('../native/runtimes/win-arm64/native/oqs.dll')" Pack="true" PackagePath="runtimes/win-arm64/native/oqs.dll" />
-    <Content Include="../native/runtimes/linux-x64/native/liboqs.so" Condition="Exists('../native/runtimes/linux-x64/native/liboqs.so')" Pack="true" PackagePath="runtimes/linux-x64/native/liboqs.so" />
-    <Content Include="../native/runtimes/linux-x64/native/liboqs.so.*" Condition="Exists('../native/runtimes/linux-x64/native/')" Pack="true" PackagePath="runtimes/linux-x64/native/" />
-    <Content Include="../native/runtimes/osx-x64/native/liboqs.dylib" Condition="Exists('../native/runtimes/osx-x64/native/liboqs.dylib')" Pack="true" PackagePath="runtimes/osx-x64/native/liboqs.dylib" />
+    <Content Include="../native/runtimes/linux-x64/native/liboqs.so*" Condition="Exists('../native/runtimes/linux-x64/native/')" Pack="true" PackagePath="runtimes/linux-x64/native/" />
+    <Content Include="../native/runtimes/linux-arm64/native/liboqs.so*" Condition="Exists('../native/runtimes/linux-arm64/native/')" Pack="true" PackagePath="runtimes/linux-arm64/native/" />
+    
+    <!-- macOS ARM64 - no need for runtime folder since only one arch -->
+    <Content Include="../native/liboqs.dylib*" Condition="Exists('../native/')" Pack="true" PackagePath="runtimes/osx-arm64/native/" />
     
     <!-- Fallback for local development - copy to output directory -->
     <None Condition="$([MSBuild]::IsOsPlatform('Windows')) And Exists('../native/oqs.dll')" Include="../native/oqs.dll" CopyToOutputDirectory="PreserveNewest" />
