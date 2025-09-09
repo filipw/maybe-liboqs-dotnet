@@ -3,10 +3,11 @@
 
 param(
     [string]$Configuration = "Release",
-    [string]$OutputDir = ".\src\native"
+    [string]$OutputDir = ".\src\native",
+    [string]$Platform = "x64"
 )
 
-Write-Host "Building liboqs as shared library for .NET..." -ForegroundColor Green
+Write-Host "Building liboqs as shared library for .NET ($Platform)..." -ForegroundColor Green
 
 # Create output directory
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
@@ -36,6 +37,13 @@ try {
             "-DOQS_DIST_BUILD=YES"
             "-DOQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON"
         )
+        
+        # Add platform-specific configuration for ARM64
+        if ($Platform -eq "ARM64") {
+            $cmakeArgs += "-A", "ARM64"
+        } elseif ($Platform -eq "x64") {
+            $cmakeArgs += "-A", "x64"
+        }
         
         # Add algorithm selections - enable common algorithms for demo
         $cmakeArgs += @(

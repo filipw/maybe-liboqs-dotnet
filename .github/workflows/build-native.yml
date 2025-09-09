@@ -1,0 +1,145 @@
+name: Build Native Libraries
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake build-essential libssl-dev
+    
+    - name: Build liboqs for Linux
+      run: |
+        chmod +x build-dotnet-liboqs-linux.sh
+        ./build-dotnet-liboqs-linux.sh Release ./src/native/runtimes/linux-x64/native
+    
+    - name: Upload Linux artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: liboqs-linux-x64
+        path: |
+          src/native/runtimes/linux-x64/native/liboqs.so*
+        retention-days: 7
+
+  build-windows-x64:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up Visual Studio environment
+      uses: microsoft/setup-msbuild@v2
+    
+    - name: Build liboqs for Windows x64
+      run: |
+        powershell -ExecutionPolicy Bypass -File build-dotnet-liboqs.ps1 -Platform x64 -OutputDir ".\src\native\runtimes\win-x64\native"
+    
+    - name: Upload Windows x64 artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: liboqs-windows-x64
+        path: |
+          src/native/runtimes/win-x64/native/*.dll
+        retention-days: 7
+
+  build-windows-arm64:
+    runs-on: windows-11-arm64
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up Visual Studio environment
+      uses: microsoft/setup-msbuild@v2
+    
+    - name: Build liboqs for Windows ARM64
+      run: |
+        powershell -ExecutionPolicy Bypass -File build-dotnet-liboqs.ps1 -Platform ARM64 -OutputDir ".\src\native\runtimes\win-arm64\native"
+    
+    - name: Upload Windows ARM64 artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: liboqs-windows-arm64
+        path: |
+          src/native/runtimes/win-arm64/native/*.dll
+        retention-days: 7
+
+  test-builds:
+    needs: [build-linux, build-windows-x64, build-windows-arm64]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        include-prerelease: true
+    
+    - name: Download Linux artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: liboqs-linux-x64
+        path: src/native/runtimes/linux-x64/native/
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build
+      run: dotnet build --no-restore
+    
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+  create-release-package:
+    if: github.ref == 'refs/heads/main'
+    needs: [build-linux, build-windows-x64, build-windows-arm64]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts/
+    
+    - name: Create release package
+      run: |
+        mkdir -p release/runtimes/linux-x64/native
+        mkdir -p release/runtimes/win-x64/native
+        mkdir -p release/runtimes/win-arm64/native
+        
+        # Copy artifacts maintaining the runtime structure
+        cp -r artifacts/liboqs-linux-x64/* release/runtimes/linux-x64/native/ || true
+        cp -r artifacts/liboqs-windows-x64/* release/runtimes/win-x64/native/ || true
+        cp -r artifacts/liboqs-windows-arm64/* release/runtimes/win-arm64/native/ || true
+        
+        # Create archive
+        tar -czf liboqs-native-libraries.tar.gz -C release .
+    
+    - name: Upload release package
+      uses: actions/upload-artifact@v4
+      with:
+        name: liboqs-native-all-platforms
+        path: liboqs-native-libraries.tar.gz
+        retention-days: 30
