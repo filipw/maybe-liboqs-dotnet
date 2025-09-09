@@ -96,7 +96,7 @@ jobs:
         retention-days: 7
 
   build-windows-arm64:
-    runs-on: windows-11-arm64
+    runs-on: windows-11-arm
     
     steps:
     - name: Checkout repository
