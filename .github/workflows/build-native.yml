@@ -287,13 +287,13 @@ jobs:
     - name: Upload LibOQS.NET.Native package
       uses: actions/upload-artifact@v4
       with:
-        name: LibOQS.NET.Native.nupkg
-        path: ./packages/LibOQS.NET.Native.*.nupkg
+        name: LibOQS.NET.Native-package
+        path: ./packages/LibOQS.NET.Native*.nupkg
         retention-days: 30
     
     - name: Upload LibOQS.NET package
       uses: actions/upload-artifact@v4
       with:
-        name: LibOQS.NET.nupkg
-        path: ./packages/LibOQS.NET.*.nupkg
+        name: LibOQS.NET-package
+        path: ./packages/LibOQS.NET.0*.nupkg
         retention-days: 30
