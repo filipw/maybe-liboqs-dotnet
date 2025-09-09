@@ -200,21 +200,6 @@ finally
 }
 ```
 
-## Project Structure
-
-```
-├── build-dotnet-liboqs.ps1     # Build script for native liboqs library
-├── LibOQS.NET.sln              # Visual Studio solution file
-├── liboqs/                     # Git submodule - liboqs C library v0.13.0
-├── src/
-│   ├── LibOQS.NET/            # High-level .NET API
-│   ├── LibOQS.NET.Native/     # Low-level P/Invoke bindings
-│   ├── LibOQS.NET.Tests/      # Unit tests
-│   ├── Examples/              # Usage examples
-│   └── native/                # Built native libraries (oqs.dll)
-└── README.md                  # This file
-```
-
 ## Supported Algorithms
 
 ### Key Encapsulation Mechanisms (KEMs)

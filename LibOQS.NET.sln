@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibOQS.NET.Native", "src\Li
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibOQS.NET.Tests", "src\LibOQS.NET.Tests\LibOQS.NET.Tests.csproj", "{C3D4E5F6-A7B8-9012-3456-7890ABCDEF12}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples", "src\Examples\Examples.csproj", "{D4E5F6A7-B8C9-0123-4567-890ABCDEF123}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples", "samples\Examples\Examples.csproj", "{D4E5F6A7-B8C9-0123-4567-890ABCDEF123}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
