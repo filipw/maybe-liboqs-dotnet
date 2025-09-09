@@ -33,7 +33,7 @@ jobs:
         chmod +x build-dotnet-liboqs-linux.sh
         ./build-dotnet-liboqs-linux.sh Release ./src/native/runtimes/linux-x64/native
     
-    - name: Test .NET project
+    - name: Test .NET project with native library
       run: |
         dotnet restore
         dotnet build --no-restore
@@ -44,7 +44,7 @@ jobs:
       with:
         name: liboqs-linux-x64
         path: |
-          src/native/runtimes/linux-x64/native/liboqs.so*
+          src/native/runtimes/linux-x64/native/liboqs.so
         retention-days: 7
 
   build-linux-arm64:
@@ -92,12 +92,23 @@ jobs:
         export CMAKE_TOOLCHAIN_FILE="$(pwd)/arm64-toolchain.cmake"
         ./build-dotnet-liboqs-linux.sh Release ./src/native/runtimes/linux-arm64/native
     
+    # Note: Cannot run tests for ARM64 libraries on x64 runner
+    - name: Verify ARM64 library was created
+      run: |
+        if [ -f "src/native/runtimes/linux-arm64/native/liboqs.so" ]; then
+          echo "ARM64 library successfully created"
+          file src/native/runtimes/linux-arm64/native/liboqs.so
+        else
+          echo "ERROR: ARM64 library not found"
+          exit 1
+        fi
+    
     - name: Upload Linux ARM64 artifacts
       uses: actions/upload-artifact@v4
       with:
         name: liboqs-linux-arm64
         path: |
-          src/native/runtimes/linux-arm64/native/liboqs.so*
+          src/native/runtimes/linux-arm64/native/liboqs.so
         retention-days: 7
 
   build-windows-x64:
@@ -122,7 +133,7 @@ jobs:
       run: |
         powershell -ExecutionPolicy Bypass -File build-dotnet-liboqs.ps1 -Platform x64 -OutputDir ".\src\native\runtimes\win-x64\native"
     
-    - name: Test .NET project
+    - name: Test .NET project with native library
       run: |
         dotnet restore
         dotnet build --no-restore
@@ -133,7 +144,7 @@ jobs:
       with:
         name: liboqs-windows-x64
         path: |
-          src/native/runtimes/win-x64/native/*.dll
+          src/native/runtimes/win-x64/native/oqs.dll
         retention-days: 7
 
   build-windows-arm64:
@@ -158,7 +169,7 @@ jobs:
       run: |
         powershell -ExecutionPolicy Bypass -File build-dotnet-liboqs.ps1 -Platform ARM64 -OutputDir ".\src\native\runtimes\win-arm64\native"
     
-    - name: Test .NET project
+    - name: Test .NET project with native library
       run: |
         dotnet restore
         dotnet build --no-restore
@@ -169,7 +180,7 @@ jobs:
       with:
         name: liboqs-windows-arm64
         path: |
-          src/native/runtimes/win-arm64/native/*.dll
+          src/native/runtimes/win-arm64/native/oqs.dll
         retention-days: 7
 
   build-macos:
@@ -192,7 +203,7 @@ jobs:
         chmod +x build-dotnet-liboqs-macos.sh
         ./build-dotnet-liboqs-macos.sh Release ./src/native/runtimes/osx/native
     
-    - name: Test .NET project
+    - name: Test .NET project with native library
       run: |
         dotnet restore
         dotnet build --no-restore
@@ -203,41 +214,136 @@ jobs:
       with:
         name: liboqs-macos
         path: |
-          src/native/runtimes/osx/native/*.dylib*
+          src/native/runtimes/osx/native/liboqs.dylib
         retention-days: 7
 
-  create-release-package:
+  create-nuget-packages:
     if: github.ref == 'refs/heads/main'
     needs: [build-linux, build-linux-arm64, build-windows-x64, build-windows-arm64, build-macos]
     runs-on: ubuntu-latest
     
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        include-prerelease: true
+    
     - name: Download all artifacts
       uses: actions/download-artifact@v4
       with:
         path: artifacts/
     
-    - name: Create release package
+    - name: Copy native libraries to correct locations
       run: |
-        mkdir -p release/runtimes/linux-x64/native
-        mkdir -p release/runtimes/linux-arm64/native
-        mkdir -p release/runtimes/win-x64/native
-        mkdir -p release/runtimes/win-arm64/native
-        mkdir -p release/runtimes/osx/native
+        # Create the native runtime directories
+        mkdir -p src/native/runtimes/linux-x64/native
+        mkdir -p src/native/runtimes/linux-arm64/native
+        mkdir -p src/native/runtimes/win-x64/native
+        mkdir -p src/native/runtimes/win-arm64/native
+        mkdir -p src/native/runtimes/osx/native
         
-        # Copy artifacts maintaining the runtime structure
-        cp -r artifacts/liboqs-linux-x64/* release/runtimes/linux-x64/native/ || true
-        cp -r artifacts/liboqs-linux-arm64/* release/runtimes/linux-arm64/native/ || true
-        cp -r artifacts/liboqs-windows-x64/* release/runtimes/win-x64/native/ || true
-        cp -r artifacts/liboqs-windows-arm64/* release/runtimes/win-arm64/native/ || true
-        cp -r artifacts/liboqs-macos/* release/runtimes/osx/native/ || true
+        # Copy artifacts to the correct locations
+        if [ -d "artifacts/liboqs-linux-x64" ]; then
+          cp -r artifacts/liboqs-linux-x64/* src/native/runtimes/linux-x64/native/
+        fi
+        if [ -d "artifacts/liboqs-linux-arm64" ]; then
+          cp -r artifacts/liboqs-linux-arm64/* src/native/runtimes/linux-arm64/native/
+        fi
+        if [ -d "artifacts/liboqs-windows-x64" ]; then
+          cp -r artifacts/liboqs-windows-x64/* src/native/runtimes/win-x64/native/
+        fi
+        if [ -d "artifacts/liboqs-windows-arm64" ]; then
+          cp -r artifacts/liboqs-windows-arm64/* src/native/runtimes/win-arm64/native/
+        fi
+        if [ -d "artifacts/liboqs-macos" ]; then
+          cp -r artifacts/liboqs-macos/* src/native/runtimes/osx/native/
+        fi
         
-        # Create archive
-        tar -czf liboqs-native-libraries.tar.gz -C release .
+        # List what we have for debugging
+        echo "Native libraries copied:"
+        find src/native/runtimes -type f -name "liboqs.so" -o -name "oqs.dll" -o -name "liboqs.dylib"
     
-    - name: Upload release package
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build solution in Release mode
+      run: dotnet build --configuration Release --no-restore
+    
+    - name: Pack LibOQS.NET.Native
+      run: dotnet pack src/LibOQS.NET.Native/LibOQS.NET.Native.csproj --configuration Release --no-build --output ./packages
+    
+    - name: Pack LibOQS.NET
+      run: dotnet pack src/LibOQS.NET/LibOQS.NET.csproj --configuration Release --no-build --output ./packages
+    
+    - name: List created packages
+      run: |
+        echo "Created NuGet packages:"
+        ls -la ./packages/
+    
+    - name: Upload NuGet packages
       uses: actions/upload-artifact@v4
       with:
-        name: liboqs-native-all-platforms
-        path: liboqs-native-libraries.tar.gz
+        name: nuget-packages
+        path: |
+          ./packages/*.nupkg
         retention-days: 30
+
+  test-nuget-packages:
+    needs: [create-nuget-packages]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        include-prerelease: true
+    
+    - name: Download NuGet packages
+      uses: actions/download-artifact@v4
+      with:
+        name: nuget-packages
+        path: ./packages
+    
+    - name: Create local NuGet source
+      run: |
+        dotnet nuget add source ./packages --name local-packages
+    
+    - name: Test with NuGet packages
+      run: |
+        dotnet restore
+        dotnet build --no-restore
+        dotnet test --no-build --verbosity normal
+
+  publish-packages:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: [test-nuget-packages]
+    runs-on: ubuntu-latest
+    environment: nuget-publish
+    
+    steps:
+    - name: Download NuGet packages
+      uses: actions/download-artifact@v4
+      with:
+        name: nuget-packages
+        path: ./packages
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        include-prerelease: true
+    
+    - name: Publish to NuGet.org
+      run: |
+        dotnet nuget push "./packages/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

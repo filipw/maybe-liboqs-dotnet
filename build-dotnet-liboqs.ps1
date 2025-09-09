@@ -83,13 +83,6 @@ try {
             
             Copy-Item $dllPath.FullName -Destination $targetPath -Force
             Write-Host "Successfully copied oqs.dll to $targetPath" -ForegroundColor Green
-            
-            # Also copy to example directory for testing
-            $exampleDir = Join-Path $scriptDir "src\Examples\bin\Debug\net9.0"
-            if (Test-Path $exampleDir) {
-                Copy-Item $dllPath.FullName -Destination $exampleDir -Force
-                Write-Host "Copied oqs.dll to examples directory" -ForegroundColor Green
-            }
         } else {
             Write-Host "Warning: Could not find oqs.dll in build output" -ForegroundColor Yellow
             Write-Host "Build contents:" -ForegroundColor Yellow

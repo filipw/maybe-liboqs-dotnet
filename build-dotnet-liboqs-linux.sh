@@ -67,27 +67,11 @@ if [ -n "$SO_PATH" ]; then
     # Ensure target directory exists
     mkdir -p "$TARGET_PATH"
     
-    # Copy the shared library and create a symlink with simple name
-    cp "$SO_PATH" "$TARGET_PATH/"
-    
-    # Create a symlink with the simple name liboqs.so if it has version numbers
+    # Copy and rename to consistent name liboqs.so
+    cp "$SO_PATH" "$TARGET_PATH/liboqs.so"
     SO_BASENAME=$(basename "$SO_PATH")
-    if [ "$SO_BASENAME" != "liboqs.so" ]; then
-        ln -sf "$SO_BASENAME" "$TARGET_PATH/liboqs.so"
-        echo "Created symlink liboqs.so -> $SO_BASENAME"
-    fi
     
-    echo "Successfully copied $SO_BASENAME to $TARGET_PATH"
-    
-    # Also copy to example directory for testing
-    EXAMPLE_DIR="$SCRIPT_DIR/src/Examples/bin/Debug/net9.0"
-    if [ -d "$EXAMPLE_DIR" ]; then
-        cp "$SO_PATH" "$EXAMPLE_DIR/"
-        if [ "$SO_BASENAME" != "liboqs.so" ]; then
-            ln -sf "$SO_BASENAME" "$EXAMPLE_DIR/liboqs.so"
-        fi
-        echo "Copied $SO_BASENAME to examples directory"
-    fi
+    echo "Successfully copied and renamed $SO_BASENAME to liboqs.so in $TARGET_PATH"
 else
     echo "Warning: Could not find liboqs.so in build output"
     echo "Build contents:"

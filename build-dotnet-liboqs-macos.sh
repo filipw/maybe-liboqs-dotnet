@@ -61,27 +61,11 @@ if [ -n "$DYLIB_PATH" ]; then
     # Ensure target directory exists
     mkdir -p "$TARGET_PATH"
     
-    # Copy the shared library and create a symlink with simple name
-    cp "$DYLIB_PATH" "$TARGET_PATH/"
-    
-    # Create a symlink with the simple name liboqs.dylib if it has version numbers
+    # Copy and rename to consistent name liboqs.dylib
+    cp "$DYLIB_PATH" "$TARGET_PATH/liboqs.dylib"
     DYLIB_BASENAME=$(basename "$DYLIB_PATH")
-    if [ "$DYLIB_BASENAME" != "liboqs.dylib" ]; then
-        ln -sf "$DYLIB_BASENAME" "$TARGET_PATH/liboqs.dylib"
-        echo "Created symlink liboqs.dylib -> $DYLIB_BASENAME"
-    fi
     
-    echo "Successfully copied $DYLIB_BASENAME to $TARGET_PATH"
-    
-    # Also copy to example directory for testing
-    EXAMPLE_DIR="$SCRIPT_DIR/src/Examples/bin/Debug/net9.0"
-    if [ -d "$EXAMPLE_DIR" ]; then
-        cp "$DYLIB_PATH" "$EXAMPLE_DIR/"
-        if [ "$DYLIB_BASENAME" != "liboqs.dylib" ]; then
-            ln -sf "$DYLIB_BASENAME" "$EXAMPLE_DIR/liboqs.dylib"
-        fi
-        echo "Copied $DYLIB_BASENAME to examples directory"
-    fi
+    echo "Successfully copied and renamed $DYLIB_BASENAME to liboqs.dylib in $TARGET_PATH"
 else
     echo "Warning: Could not find liboqs.dylib in build output"
     echo "Build contents:"
