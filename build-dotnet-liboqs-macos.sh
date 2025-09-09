@@ -49,10 +49,10 @@ echo "Building liboqs..."
 cmake --build . --config "$CONFIGURATION"
 
 # Find the built shared library
-DYLIB_PATH=$(find . -name "liboqs.dylib*" -type f | head -n 1)
+DYLIB_PATH=$(find . -name "liboqs*.dylib" -type f | head -n 1)
 if [ -z "$DYLIB_PATH" ]; then
     # Try in lib directory for different build layouts
-    DYLIB_PATH=$(find lib -name "liboqs.dylib*" -type f 2>/dev/null | head -n 1)
+    DYLIB_PATH=$(find lib -name "liboqs*.dylib" -type f 2>/dev/null | head -n 1)
 fi
 
 if [ -n "$DYLIB_PATH" ]; then
