@@ -15,7 +15,6 @@
     <PackageTags>quantum cryptography post-quantum liboqs</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>AnyCPU;x64;ARM64</Platforms>
-    <NativeLibraryPath>../native/</NativeLibraryPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +24,12 @@
     <Content Include="../native/runtimes/linux-arm64/native/liboqs.so*" Condition="Exists('../native/runtimes/linux-arm64/native/')" Pack="true" PackagePath="runtimes/linux-arm64/native/" />
     <Content Include="../native/runtimes/osx/native/liboqs.dylib*" Condition="Exists('../native/runtimes/osx/native/liboqs.dylib')" Pack="true" PackagePath="runtimes/osx/native/" />
 
-    <!-- Fallback for local development - copy to output directory -->
+    <None Condition="$([MSBuild]::IsOsPlatform('Windows')) And Exists('../native/runtimes/win-x64/native/oqs.dll')" Include="../native/runtimes/win-x64/native/oqs.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Condition="$([MSBuild]::IsOsPlatform('Windows')) And Exists('../native/runtimes/win-arm64/native/oqs.dll')" Include="../native/runtimes/win-arm64/native/oqs.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Condition="$([MSBuild]::IsOsPlatform('Linux')) And Exists('../native/runtimes/linux-x64/native/liboqs.so')" Include="../native/runtimes/linux-x64/native/liboqs.so" CopyToOutputDirectory="PreserveNewest" />
+    <None Condition="$([MSBuild]::IsOsPlatform('Linux')) And Exists('../native/runtimes/linux-arm64/native/liboqs.so')" Include="../native/runtimes/linux-arm64/native/liboqs.so" CopyToOutputDirectory="PreserveNewest" />
+    <None Condition="$([MSBuild]::IsOsPlatform('OSX')) And Exists('../native/runtimes/osx/native/liboqs.dylib')" Include="../native/runtimes/osx/native/liboqs.dylib" CopyToOutputDirectory="PreserveNewest" />
+    
     <None Condition="$([MSBuild]::IsOsPlatform('Windows')) And Exists('../native/oqs.dll')" Include="../native/oqs.dll" CopyToOutputDirectory="PreserveNewest" />
     <None Condition="$([MSBuild]::IsOsPlatform('Linux')) And Exists('../native/liboqs.so')" Include="../native/liboqs.so" CopyToOutputDirectory="PreserveNewest" />
     <None Condition="$([MSBuild]::IsOsPlatform('OSX')) And Exists('../native/liboqs.dylib')" Include="../native/liboqs.dylib" CopyToOutputDirectory="PreserveNewest" />
