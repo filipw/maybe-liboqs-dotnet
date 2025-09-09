@@ -17,6 +17,12 @@ jobs:
       with:
         submodules: recursive
     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        include-prerelease: true
+    
     - name: Install dependencies
       run: |
         sudo apt update
@@ -26,6 +32,12 @@ jobs:
       run: |
         chmod +x build-dotnet-liboqs-linux.sh
         ./build-dotnet-liboqs-linux.sh Release ./src/native/runtimes/linux-x64/native
+    
+    - name: Test .NET project
+      run: |
+        dotnet restore
+        dotnet build --no-restore
+        dotnet test --no-build --verbosity normal
     
     - name: Upload Linux artifacts
       uses: actions/upload-artifact@v4
@@ -44,24 +56,38 @@ jobs:
       with:
         submodules: recursive
     
-    - name: Set up ARM64 cross-compilation
+    - name: Set up ARM64 cross-compilation with musl
       run: |
+        # Download and extract musl cross-compilation toolchain
+        wget https://github.com/cross-tools/musl-cross/releases/download/20250815/aarch64-unknown-linux-musl.tar.xz
+        tar -xf aarch64-unknown-linux-musl.tar.xz
+        sudo mv aarch64-unknown-linux-musl /opt/
+        
+        # Install cmake
         sudo apt update
-        sudo apt install -y cmake build-essential gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libssl-dev:arm64
-        sudo dpkg --add-architecture arm64
-        sudo apt update
-        sudo apt install -y libssl-dev:arm64
+        sudo apt install -y cmake build-essential
+        
+        # Create CMake toolchain file
+        cat > arm64-toolchain.cmake << 'EOF'
+        set(CMAKE_SYSTEM_NAME Linux)
+        set(CMAKE_SYSTEM_PROCESSOR aarch64)
+        
+        set(CMAKE_C_COMPILER /opt/aarch64-unknown-linux-musl/bin/aarch64-unknown-linux-musl-gcc)
+        set(CMAKE_CXX_COMPILER /opt/aarch64-unknown-linux-musl/bin/aarch64-unknown-linux-musl-g++)
+        
+        set(CMAKE_FIND_ROOT_PATH /opt/aarch64-unknown-linux-musl)
+        set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+        set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+        set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+        set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+        EOF
     
     - name: Build liboqs for Linux ARM64
       run: |
         chmod +x build-dotnet-liboqs-linux.sh
-        CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ ./build-dotnet-liboqs-linux.sh Release ./src/native/runtimes/linux-arm64/native
-      env:
-        CMAKE_TOOLCHAIN_FILE: |
-          set(CMAKE_SYSTEM_NAME Linux)
-          set(CMAKE_SYSTEM_PROCESSOR aarch64)
-          set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
-          set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
+        # Modify the build script to use our toolchain file
+        export CMAKE_TOOLCHAIN_FILE="$(pwd)/arm64-toolchain.cmake"
+        ./build-dotnet-liboqs-linux.sh Release ./src/native/runtimes/linux-arm64/native
     
     - name: Upload Linux ARM64 artifacts
       uses: actions/upload-artifact@v4
@@ -80,12 +106,24 @@ jobs:
       with:
         submodules: recursive
     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        include-prerelease: true
+    
     - name: Set up Visual Studio environment
       uses: microsoft/setup-msbuild@v2
     
     - name: Build liboqs for Windows x64
       run: |
         powershell -ExecutionPolicy Bypass -File build-dotnet-liboqs.ps1 -Platform x64 -OutputDir ".\src\native\runtimes\win-x64\native"
+    
+    - name: Test .NET project
+      run: |
+        dotnet restore
+        dotnet build --no-restore
+        dotnet test --no-build --verbosity normal
     
     - name: Upload Windows x64 artifacts
       uses: actions/upload-artifact@v4
@@ -104,12 +142,24 @@ jobs:
       with:
         submodules: recursive
     
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        include-prerelease: true
+    
     - name: Set up Visual Studio environment
       uses: microsoft/setup-msbuild@v2
     
     - name: Build liboqs for Windows ARM64
       run: |
         powershell -ExecutionPolicy Bypass -File build-dotnet-liboqs.ps1 -Platform ARM64 -OutputDir ".\src\native\runtimes\win-arm64\native"
+    
+    - name: Test .NET project
+      run: |
+        dotnet restore
+        dotnet build --no-restore
+        dotnet test --no-build --verbosity normal
     
     - name: Upload Windows ARM64 artifacts
       uses: actions/upload-artifact@v4
@@ -119,7 +169,7 @@ jobs:
           src/native/runtimes/win-arm64/native/*.dll
         retention-days: 7
 
-  build-macos-arm64:
+  build-macos:
     runs-on: macos-latest
     
     steps:
@@ -128,55 +178,34 @@ jobs:
       with:
         submodules: recursive
     
-    - name: Install dependencies
-      run: |
-        brew install cmake openssl
-    
-    - name: Build liboqs for macOS ARM64
-      run: |
-        chmod +x build-dotnet-liboqs-macos.sh
-        ./build-dotnet-liboqs-macos.sh Release ./src/native
-    
-    - name: Upload macOS ARM64 artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: liboqs-macos-arm64
-        path: |
-          src/native/*.dylib*
-        retention-days: 7
-
-  test-builds:
-    needs: [build-linux, build-linux-arm64, build-windows-x64, build-windows-arm64, build-macos-arm64]
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
         include-prerelease: true
     
-    - name: Download Linux artifacts
-      uses: actions/download-artifact@v4
+    - name: Build liboqs for macOS
+      run: |
+        chmod +x build-dotnet-liboqs-macos.sh
+        ./build-dotnet-liboqs-macos.sh Release ./src/native/runtimes/osx/native
+    
+    - name: Test .NET project
+      run: |
+        dotnet restore
+        dotnet build --no-restore
+        dotnet test --no-build --verbosity normal
+    
+    - name: Upload macOS artifacts
+      uses: actions/upload-artifact@v4
       with:
-        name: liboqs-linux-x64
-        path: src/native/runtimes/linux-x64/native/
-    
-    - name: Restore dependencies
-      run: dotnet restore
-    
-    - name: Build
-      run: dotnet build --no-restore
-    
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+        name: liboqs-macos
+        path: |
+          src/native/runtimes/osx/native/*.dylib*
+        retention-days: 7
 
   create-release-package:
     if: github.ref == 'refs/heads/main'
-    needs: [build-linux, build-linux-arm64, build-windows-x64, build-windows-arm64, build-macos-arm64]
+    needs: [build-linux, build-linux-arm64, build-windows-x64, build-windows-arm64, build-macos]
     runs-on: ubuntu-latest
     
     steps:
@@ -191,14 +220,14 @@ jobs:
         mkdir -p release/runtimes/linux-arm64/native
         mkdir -p release/runtimes/win-x64/native
         mkdir -p release/runtimes/win-arm64/native
-        mkdir -p release/runtimes/osx-arm64/native
+        mkdir -p release/runtimes/osx/native
         
         # Copy artifacts maintaining the runtime structure
         cp -r artifacts/liboqs-linux-x64/* release/runtimes/linux-x64/native/ || true
         cp -r artifacts/liboqs-linux-arm64/* release/runtimes/linux-arm64/native/ || true
         cp -r artifacts/liboqs-windows-x64/* release/runtimes/win-x64/native/ || true
         cp -r artifacts/liboqs-windows-arm64/* release/runtimes/win-arm64/native/ || true
-        cp -r artifacts/liboqs-macos-arm64/* release/runtimes/osx-arm64/native/ || true
+        cp -r artifacts/liboqs-macos/* release/runtimes/osx/native/ || true
         
         # Create archive
         tar -czf liboqs-native-libraries.tar.gz -C release .
