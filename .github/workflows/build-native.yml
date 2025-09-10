@@ -9,6 +9,10 @@ on:
   release:
     types: [ created ]
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
