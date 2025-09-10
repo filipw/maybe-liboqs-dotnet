@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+  release:
+    types: [ created ]
 
 jobs:
   build-linux:
@@ -218,7 +220,7 @@ jobs:
         retention-days: 7
 
   create-nuget-packages:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'release'
     needs: [build-linux, build-linux-arm64, build-windows-x64, build-windows-arm64, build-macos]
     runs-on: ubuntu-latest
     
@@ -297,3 +299,88 @@ jobs:
         name: LibOQS.NET-package
         path: ./packages/LibOQS.NET.0*.nupkg
         retention-days: 30
+
+  release:
+    if: github.event_name == 'release'
+    needs: [build-linux, build-linux-arm64, build-windows-x64, build-windows-arm64, build-macos]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        include-prerelease: true
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts/
+    
+    - name: Copy native libraries to correct locations
+      run: |
+        # Create the native runtime directories
+        mkdir -p src/native/runtimes/linux-x64/native
+        mkdir -p src/native/runtimes/linux-arm64/native
+        mkdir -p src/native/runtimes/win-x64/native
+        mkdir -p src/native/runtimes/win-arm64/native
+        mkdir -p src/native/runtimes/osx/native
+        
+        # Copy artifacts to the correct locations
+        if [ -d "artifacts/liboqs-linux-x64" ]; then
+          cp -r artifacts/liboqs-linux-x64/* src/native/runtimes/linux-x64/native/
+        fi
+        if [ -d "artifacts/liboqs-linux-arm64" ]; then
+          cp -r artifacts/liboqs-linux-arm64/* src/native/runtimes/linux-arm64/native/
+        fi
+        if [ -d "artifacts/liboqs-windows-x64" ]; then
+          cp -r artifacts/liboqs-windows-x64/* src/native/runtimes/win-x64/native/
+        fi
+        if [ -d "artifacts/liboqs-windows-arm64" ]; then
+          cp -r artifacts/liboqs-windows-arm64/* src/native/runtimes/win-arm64/native/
+        fi
+        if [ -d "artifacts/liboqs-macos" ]; then
+          cp -r artifacts/liboqs-macos/* src/native/runtimes/osx/native/
+        fi
+        
+        # List what we have for debugging
+        echo "Native libraries copied:"
+        find src/native/runtimes -type f -name "liboqs.so" -o -name "oqs.dll" -o -name "liboqs.dylib"
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build solution in Release mode
+      run: dotnet build --configuration Release --no-restore
+    
+    - name: Pack LibOQS.NET.Native
+      run: dotnet pack src/LibOQS.NET.Native/LibOQS.NET.Native.csproj --configuration Release --no-build --output ./packages
+    
+    - name: Pack LibOQS.NET
+      run: dotnet pack src/LibOQS.NET/LibOQS.NET.csproj --configuration Release --no-build --output ./packages
+    
+    - name: Push to NuGet
+      run: dotnet nuget push ./packages/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+    
+    - name: Upload LibOQS.NET.Native package to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./packages/LibOQS.NET.Native.${{ github.event.release.tag_name }}.nupkg
+        asset_name: LibOQS.NET.Native.${{ github.event.release.tag_name }}.nupkg
+        asset_content_type: application/zip
+    
+    - name: Upload LibOQS.NET package to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./packages/LibOQS.NET.${{ github.event.release.tag_name }}.nupkg
+        asset_name: LibOQS.NET.${{ github.event.release.tag_name }}.nupkg
+        asset_content_type: application/zip
