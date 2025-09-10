@@ -1,6 +1,6 @@
-# LibOQS.NET: .NET bindings for liboqs
+# Maybe LibOQS.NET: .NET bindings/wrapper for liboqs
 
-**LibOQS.NET** provides .NET bindings for the [Open Quantum Safe](https://openquantumsafe.org/) [liboqs](https://github.com/open-quantum-safe/liboqs/) C library, which is a C library for quantum-resistant cryptographic algorithms.
+**LibOQS.NET** provides .NET wrapper/bindings for the [Open Quantum Safe](https://openquantumsafe.org/) [liboqs](https://github.com/open-quantum-safe/liboqs/) C library, which is a C library for quantum-resistant cryptographic algorithms.
 
 This project offers two .NET packages:
 
@@ -36,13 +36,24 @@ git submodule update
 
 1. **Build the native liboqs library:**
 
+    On Windows, run the PowerShell script:
    ```powershell
    .\build-dotnet-liboqs.ps1
    ```
 
+    On Linux, run the bash script:
+    ```bash
+    ./build-dotnet-liboqs-linux.sh
+    ``` 
+
+    On Mac, use:
+    ```bash
+    ./build-dotnet-liboqs-macos.sh
+    ```
+
    This will:
    - Configure and build liboqs as a shared library
-   - Copy the resulting `oqs.dll` to the appropriate directories
+   - Copy the resulting DLL/so/dylib to the appropriate directories
    - Enable common quantum-resistant algorithms (ML-KEM, ML-DSA, Kyber, Dilithium, Falcon, FrodoKEM)
 
 2. **Build the .NET libraries:**
@@ -62,12 +73,6 @@ git submodule update
    ```bash
    cd src/Examples
    dotnet run
-   ```
-
-5. **Create NuGet packages:**
-
-   ```bash
-   dotnet pack --configuration Release
    ```
 
 ### Submodule Management
@@ -111,7 +116,7 @@ git clone --recursive <repo-url>
 ### Installation
 
 ```xml
-<PackageReference Include="LibOQS.NET" Version="0.11.0" />
+<PackageReference Include="LibOQS.NET" Version="...version..." />
 ```
 
 ### Basic Usage
