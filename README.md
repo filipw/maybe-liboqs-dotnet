@@ -1,4 +1,4 @@
-# Maybe LibOQS.NET: .NET bindings/wrapper for liboqs
+# Maybe LibOQS.NET: .NET library for liboqs
 
 **LibOQS.NET** provides .NET wrapper/bindings for the [Open Quantum Safe](https://openquantumsafe.org/) [liboqs](https://github.com/open-quantum-safe/liboqs/) C library, which is a C library for quantum-resistant cryptographic algorithms.
 
@@ -7,7 +7,175 @@ This project offers two .NET packages:
 - The `LibOQS.NET.Native` package provides low-level P/Invoke bindings to the liboqs C library
 - The `LibOQS.NET` package offers a high-level, type-safe .NET API for the quantum-resistant algorithms
 
-## Getting Started
+Both packages are **self-contained** and include all necessary native dependencies - no manual compilation or native library installation is required.
+
+## Quick Start
+
+### Installation
+
+Install from NuGet - no additional dependencies or native compilation required:
+
+```xml
+<PackageReference Include="LibOQS.NET" Version="...version..." />
+```
+
+Or via the .NET CLI:
+
+```bash
+dotnet add package LibOQS.NET
+```
+
+### Basic Usage
+
+```csharp
+using LibOQS.NET;
+
+// LibOQS initializes automatically - no manual Initialize() call needed
+try
+{
+    // Key Encapsulation Mechanism example
+    using var kem = new KemInstance(KemAlgorithm.MlKem512);
+    
+    // Generate keypair
+    var (publicKey, secretKey) = kem.GenerateKeypair();
+    
+    // Encapsulate a shared secret
+    var (ciphertext, sharedSecret1) = kem.Encapsulate(publicKey);
+    
+    // Decapsulate the shared secret
+    var sharedSecret2 = kem.Decapsulate(secretKey, ciphertext);
+    
+    // Verify they match
+    Console.WriteLine($"Shared secrets match: {sharedSecret1.SequenceEqual(sharedSecret2)}");
+    
+    // Digital signature example
+    using var sig = new SigInstance(SigAlgorithm.MlDsa44);
+    
+    // Generate signature keypair
+    var (sigPublicKey, sigSecretKey) = sig.GenerateKeypair();
+    
+    // Sign a message
+    var message = System.Text.Encoding.UTF8.GetBytes("Hello, post-quantum world!");
+    var signature = sig.Sign(message, sigSecretKey);
+    
+    // Verify the signature
+    var isValid = sig.Verify(message, signature, sigPublicKey);
+    Console.WriteLine($"Signature valid: {isValid}");
+}
+finally
+{
+    // Optional cleanup - called automatically at app shutdown
+    LibOqs.Cleanup();
+}
+```
+
+### Signed Key Exchange Example
+
+```csharp
+using LibOQS.NET;
+
+try
+{
+    using var sigAlg = new SigInstance(SigAlgorithm.MlDsa44);
+    using var kemAlg = new KemInstance(KemAlgorithm.MlKem512);
+    
+    // A's long-term secrets
+    var (aSigPk, aSigSk) = sigAlg.GenerateKeypair();
+    // B's long-term secrets  
+    var (bSigPk, bSigSk) = sigAlg.GenerateKeypair();
+
+    // A -> B: kem_pk, signature
+    var (kemPk, kemSk) = kemAlg.GenerateKeypair();
+    var signature1 = sigAlg.Sign(kemPk, aSigSk);
+
+    // B -> A: kem_ct, signature
+    if (!sigAlg.Verify(kemPk, signature1, aSigPk))
+        throw new Exception("Failed to verify A's signature");
+        
+    var (kemCt, bKemSs) = kemAlg.Encapsulate(kemPk);
+    var signature2 = sigAlg.Sign(kemCt, bSigSk);
+
+    // A verifies, decapsulates, now both have kem_ss
+    if (!sigAlg.Verify(kemCt, signature2, bSigPk))
+        throw new Exception("Failed to verify B's signature");
+        
+    var aKemSs = kemAlg.Decapsulate(kemSk, kemCt);
+    
+    // Verify shared secrets match
+    if (aKemSs.SequenceEqual(bKemSs))
+        Console.WriteLine("Key exchange successful!");
+}
+finally
+{
+    LibOqs.Cleanup();
+}
+```
+
+## Features
+
+- **Key Encapsulation Mechanisms (KEMs)**: ML-KEM, Kyber, FrodoKEM, and more
+- **Digital Signatures**: ML-DSA, Dilithium, Falcon, SPHINCS+, and more
+- **Type-safe API**: Strong typing with enums for algorithms and proper resource management
+- **Memory management**: Automatic cleanup of native resources using IDisposable pattern
+- **Cross-platform**: Supports Windows x64, Windows ARM64, macOS ARM64, Linux x64, and Linux ARM64
+- **Self-contained**: No manual native library installation or compilation required
+
+## Supported Algorithms
+
+### Key Encapsulation Mechanisms (KEMs)
+
+- **ML-KEM** (NIST standardized): ML-KEM-512, ML-KEM-768, ML-KEM-1024
+- **Kyber**: Kyber512, Kyber768, Kyber1024
+- **FrodoKEM**: FrodoKEM-640-AES, FrodoKEM-640-SHAKE, FrodoKEM-976-AES, FrodoKEM-976-SHAKE, FrodoKEM-1344-AES, FrodoKEM-1344-SHAKE
+
+### Digital Signatures
+
+- **ML-DSA** (NIST standardized): ML-DSA-44, ML-DSA-65, ML-DSA-87
+- **Dilithium**: Dilithium2, Dilithium3, Dilithium5
+- **Falcon**: Falcon-512, Falcon-1024
+- **SPHINCS+**: Various parameter sets
+
+## Algorithm Availability
+
+Not all algorithms may be available in every build of liboqs. You can check if an algorithm is enabled:
+
+```csharp
+if (KemAlgorithm.MlKem512.IsEnabled())
+{
+    // Use ML-KEM-512
+    using var kem = new KemInstance(KemAlgorithm.MlKem512);
+    // ...
+}
+```
+
+## Memory Management
+
+The library properly manages native resources:
+
+- **Automatic initialization**: LibOQS initializes automatically via static constructor
+- **Automatic cleanup**: Use `using` statements with `KemInstance` and `SigInstance`
+- **Optional manual cleanup**: Call `LibOqs.Cleanup()` when completely done with the library
+
+## Thread Safety
+
+The native liboqs library is generally thread-safe for read operations but may not be thread-safe for initialization. It's recommended to:
+
+- Use separate instances of `KemInstance` and `SigInstance` per thread
+- The automatic initialization is thread-safe
+- Call `LibOqs.Cleanup()` once at application shutdown if needed
+
+## Error Handling
+
+The library throws specific exceptions:
+
+- `OqsException`: General OQS operation failures
+- `AlgorithmNotSupportedException`: When an algorithm is not enabled
+- `ArgumentException`: Invalid parameters
+- `ObjectDisposedException`: Using disposed objects
+
+## Building from Source (For Development)
+
+The NuGet packages are self-contained and don't require building from source. This section is only for developers who want to contribute or modify the library.
 
 ### Prerequisites
 
@@ -102,190 +270,30 @@ git submodule update --remote
 git clone --recursive <repo-url>
 ```
 
-## Features
+## Platform Support
 
-- **Key Encapsulation Mechanisms (KEMs)**: ML-KEM, Kyber, FrodoKEM, and more
-- **Digital Signatures**: ML-DSA, Dilithium, Falcon, SPHINCS+, and more
-- **Type-safe API**: Strong typing with enums for algorithms and proper resource management
-- **Memory management**: Automatic cleanup of native resources using IDisposable pattern
-- **Cross-platform**: Supports Windows, Linux, and macOS on x64 and ARM64
-- **Automatic initialization**: LibOQS initializes automatically when first accessed
+LibOQS.NET supports the following platforms out of the box with no additional setup required:
 
-## Quick Start
+- **Windows x64**
+- **Windows ARM64** 
+- **Linux x64**
+- **Linux ARM64**
+- **macOS ARM64**
 
-### Installation
-
-```xml
-<PackageReference Include="LibOQS.NET" Version="...version..." />
-```
-
-### Basic Usage
-
-```csharp
-using LibOQS.NET;
-
-// LibOQS initializes automatically - no manual Initialize() call needed
-try
-{
-    // Key Encapsulation Mechanism example
-    using var kem = new KemInstance(KemAlgorithm.MlKem512);
-    
-    // Generate keypair
-    var (publicKey, secretKey) = kem.GenerateKeypair();
-    
-    // Encapsulate a shared secret
-    var (ciphertext, sharedSecret1) = kem.Encapsulate(publicKey);
-    
-    // Decapsulate the shared secret
-    var sharedSecret2 = kem.Decapsulate(secretKey, ciphertext);
-    
-    // Verify they match
-    Console.WriteLine($"Shared secrets match: {sharedSecret1.SequenceEqual(sharedSecret2)}");
-    
-    // Digital signature example
-    using var sig = new SigInstance(SigAlgorithm.MlDsa44);
-    
-    // Generate signature keypair
-    var (sigPublicKey, sigSecretKey) = sig.GenerateKeypair();
-    
-    // Sign a message
-    var message = System.Text.Encoding.UTF8.GetBytes("Hello, post-quantum world!");
-    var signature = sig.Sign(message, sigSecretKey);
-    
-    // Verify the signature
-    var isValid = sig.Verify(message, signature, sigPublicKey);
-    Console.WriteLine($"Signature valid: {isValid}");
-}
-finally
-{
-    // Optional cleanup - called automatically at app shutdown
-    LibOqs.Cleanup();
-}
-```
-
-### Signed Key Exchange Example
-
-```csharp
-using LibOQS.NET;
-
-try
-{
-    using var sigAlg = new SigInstance(SigAlgorithm.MlDsa44);
-    using var kemAlg = new KemInstance(KemAlgorithm.MlKem512);
-    
-    // A's long-term secrets
-    var (aSigPk, aSigSk) = sigAlg.GenerateKeypair();
-    // B's long-term secrets  
-    var (bSigPk, bSigSk) = sigAlg.GenerateKeypair();
-
-    // A -> B: kem_pk, signature
-    var (kemPk, kemSk) = kemAlg.GenerateKeypair();
-    var signature1 = sigAlg.Sign(kemPk, aSigSk);
-
-    // B -> A: kem_ct, signature
-    if (!sigAlg.Verify(kemPk, signature1, aSigPk))
-        throw new Exception("Failed to verify A's signature");
-        
-    var (kemCt, bKemSs) = kemAlg.Encapsulate(kemPk);
-    var signature2 = sigAlg.Sign(kemCt, bSigSk);
-
-    // A verifies, decapsulates, now both have kem_ss
-    if (!sigAlg.Verify(kemCt, signature2, bSigPk))
-        throw new Exception("Failed to verify B's signature");
-        
-    var aKemSs = kemAlg.Decapsulate(kemSk, kemCt);
-    
-    // Verify shared secrets match
-    if (aKemSs.SequenceEqual(bKemSs))
-        Console.WriteLine("Key exchange successful!");
-}
-finally
-{
-    LibOqs.Cleanup();
-}
-```
-
-## Supported Algorithms
-
-### Key Encapsulation Mechanisms (KEMs)
-
-- **ML-KEM** (NIST standardized): ML-KEM-512, ML-KEM-768, ML-KEM-1024
-- **Kyber**: Kyber512, Kyber768, Kyber1024
-- **FrodoKEM**: FrodoKEM-640-AES, FrodoKEM-640-SHAKE, FrodoKEM-976-AES, FrodoKEM-976-SHAKE, FrodoKEM-1344-AES, FrodoKEM-1344-SHAKE
-
-### Digital Signatures
-
-- **ML-DSA** (NIST standardized): ML-DSA-44, ML-DSA-65, ML-DSA-87
-- **Dilithium**: Dilithium2, Dilithium3, Dilithium5
-- **Falcon**: Falcon-512, Falcon-1024
-- **SPHINCS+**: Various parameter sets
-
-## Algorithm Availability
-
-Not all algorithms may be available in every build of liboqs. You can check if an algorithm is enabled:
-
-```csharp
-if (KemAlgorithm.MlKem512.IsEnabled())
-{
-    // Use ML-KEM-512
-    using var kem = new KemInstance(KemAlgorithm.MlKem512);
-    // ...
-}
-```
-
-## Memory Management
-
-The library properly manages native resources:
-
-- **Automatic initialization**: LibOQS initializes automatically via static constructor
-- **Automatic cleanup**: Use `using` statements with `KemInstance` and `SigInstance`
-- **Optional manual cleanup**: Call `LibOqs.Cleanup()` when completely done with the library
-
-## Thread Safety
-
-The native liboqs library is generally thread-safe for read operations but may not be thread-safe for initialization. It's recommended to:
-
-- Use separate instances of `KemInstance` and `SigInstance` per thread
-- The automatic initialization is thread-safe
-- Call `LibOqs.Cleanup()` once at application shutdown if needed
-
-## Error Handling
-
-The library throws specific exceptions:
-
-- `OqsException`: General OQS operation failures
-- `AlgorithmNotSupportedException`: When an algorithm is not enabled
-- `ArgumentException`: Invalid parameters
-- `ObjectDisposedException`: Using disposed objects
-
-## Platform-Specific Requirements
-
-### Windows
-- Ensure `oqs.dll` is in your PATH or in the application directory
-- Built with Visual Studio Build Tools or equivalent
-
-### Linux
-- Ensure `liboqs.so` is in `/usr/lib`, `/usr/local/lib`, or another library path
-- Built with GCC or Clang
-
-### macOS
-- Ensure `liboqs.dylib` is in the library path
-- Built with Clang
+The NuGet packages include all necessary native libraries for these platforms.
 
 ## Troubleshooting
-
-### DllNotFoundException
-If you get a `DllNotFoundException`, it means the liboqs shared library cannot be found. Make sure:
-1. You've run the build script: `.\build-dotnet-liboqs.ps1`
-2. The library is built for your platform and architecture
-3. The library is in your system's library search path
-4. All dependencies of liboqs are available
 
 ### AlgorithmNotSupportedException
 This means the algorithm you're trying to use was not enabled when liboqs was compiled. You can:
 1. Check which algorithms are enabled using the `.IsEnabled()` method
-2. Rebuild liboqs with the desired algorithms enabled
-3. Use a different algorithm that is available
+2. Use a different algorithm that is available
+
+### General Issues
+If you encounter issues:
+1. Ensure you're using a supported platform (see Platform Support above)
+2. Check that your .NET runtime version is compatible (.NET 9.0 or later)
+3. Verify the algorithm you're trying to use is enabled with `.IsEnabled()`
 
 ## Contributing
 
