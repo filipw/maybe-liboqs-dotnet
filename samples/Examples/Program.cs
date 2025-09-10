@@ -18,61 +18,36 @@ class Program
                 .BorderColor(Color.Blue)
                 .Header("[yellow]Welcome[/]"));
 
-        try
-        {
-            // Initialize the OQS library
-            LibOqs.Initialize();
-            
-            var demo = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Choose the [green]demo[/] to run?")
-                    .AddChoices([
-                        "ML-KEM (Key Encapsulation)", 
-                        "ML-DSA (Digital Signature)", 
+        var demo = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Choose the [green]demo[/] to run?")
+                .AddChoices([
+                    "ML-KEM (Key Encapsulation)",
+                        "ML-DSA (Digital Signature)",
                         "Signed Key Exchange",
                         "Algorithm Comparison",
                         "Exit"
-                    ]));
+                ]));
 
-            switch (demo)
-            {
-                case "ML-KEM (Key Encapsulation)":
-                    LibOqsDemo.RunMlKem();
-                    break;
-                case "ML-DSA (Digital Signature)":
-                    LibOqsDemo.RunMlDsa();
-                    break;
-                case "Signed Key Exchange":
-                    LibOqsDemo.RunSignedKeyExchange();
-                    break;
-                case "Algorithm Comparison":
-                    LibOqsDemo.RunAlgorithmComparison();
-                    break;
-                case "Exit":
-                    return;
-            }
-        }
-        catch (OqsException ex)
+        switch (demo)
         {
-            AnsiConsole.Write(
-                new Panel($"[red]Error:[/] {ex.Message}")
-                    .BorderColor(Color.Red)
-                    .Header("[red]LibOQS Error[/]"));
-            
-            AnsiConsole.WriteLine();
-            AnsiConsole.Write(
-                new Panel("Please ensure the liboqs shared library is installed and accessible.\nSee BUILD.md for installation instructions.")
-                    .BorderColor(Color.Yellow)
-                    .Header("[yellow]Solution[/]"));
+            case "ML-KEM (Key Encapsulation)":
+                LibOqsDemo.RunMlKem();
+                break;
+            case "ML-DSA (Digital Signature)":
+                LibOqsDemo.RunMlDsa();
+                break;
+            case "Signed Key Exchange":
+                LibOqsDemo.RunSignedKeyExchange();
+                break;
+            case "Algorithm Comparison":
+                LibOqsDemo.RunAlgorithmComparison();
+                break;
+            case "Exit":
+                return;
         }
-        catch (Exception ex)
-        {
-            AnsiConsole.WriteException(ex);
-        }
-        finally
-        {
-            LibOqs.Cleanup();
-        }
+
+        LibOqs.Cleanup();
     }
 }
 
