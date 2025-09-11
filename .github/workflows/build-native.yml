@@ -87,8 +87,6 @@ jobs:
         set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
         set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
         
-        # Disable OpenSSL for cross-compilation to avoid dependency issues
-        set(OQS_USE_OPENSSL OFF CACHE BOOL "Disable OpenSSL for cross-compilation")
         EOF
     
     - name: Build liboqs for Linux ARM64
