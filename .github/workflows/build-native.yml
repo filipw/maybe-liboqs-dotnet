@@ -64,24 +64,19 @@ jobs:
     
     - name: Set up ARM64 cross-compilation with musl
       run: |
-        # Download and extract musl cross-compilation toolchain
-        wget https://github.com/cross-tools/musl-cross/releases/download/20250815/aarch64-unknown-linux-musl.tar.xz
-        tar -xf aarch64-unknown-linux-musl.tar.xz
-        sudo mv aarch64-unknown-linux-musl /opt/
-        
-        # Install cmake
+        # Install build tools and the aarch64-linux-gnu cross-compiler
         sudo apt update
-        sudo apt install -y cmake build-essential
+        sudo apt install -y cmake build-essential gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
         
         # Create CMake toolchain file
         cat > arm64-toolchain.cmake << 'EOF'
         set(CMAKE_SYSTEM_NAME Linux)
         set(CMAKE_SYSTEM_PROCESSOR aarch64)
         
-        set(CMAKE_C_COMPILER /opt/aarch64-unknown-linux-musl/bin/aarch64-unknown-linux-musl-gcc)
-        set(CMAKE_CXX_COMPILER /opt/aarch64-unknown-linux-musl/bin/aarch64-unknown-linux-musl-g++)
+        set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
+        set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
         
-        set(CMAKE_FIND_ROOT_PATH /opt/aarch64-unknown-linux-musl)
+        # Let the compiler find its own sysroot
         set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
         set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
         set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
