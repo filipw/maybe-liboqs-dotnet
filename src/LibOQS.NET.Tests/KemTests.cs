@@ -12,12 +12,6 @@ public class KemTests
     [InlineData(KemAlgorithm.MlKem1024)]
     public void KemEncapsDecaps_ShouldSucceed(KemAlgorithm algorithm)
     {
-        // Skip test if algorithm is not enabled
-        if (!algorithm.IsEnabled())
-        {
-            return;
-        }
-
         using var kem = new KemInstance(algorithm);
         
         // Generate keypair
@@ -42,11 +36,6 @@ public class KemTests
     [Fact]
     public void KemEncapsulate_WithWrongKeySize_ShouldThrow()
     {
-        if (!KemAlgorithm.MlKem512.IsEnabled())
-        {
-            return;
-        }
-
         using var kem = new KemInstance(KemAlgorithm.MlKem512);
         var wrongSizeKey = new byte[100]; // Wrong size
         
@@ -56,11 +45,6 @@ public class KemTests
     [Fact]
     public void KemDecapsulate_WithWrongKeySize_ShouldThrow()
     {
-        if (!KemAlgorithm.MlKem512.IsEnabled())
-        {
-            return;
-        }
-
         using var kem = new KemInstance(KemAlgorithm.MlKem512);
         var (publicKey, _) = kem.GenerateKeypair();
         var (ciphertext, _) = kem.Encapsulate(publicKey);
@@ -73,11 +57,6 @@ public class KemTests
     [Fact]
     public void KemDecapsulate_WithWrongCiphertextSize_ShouldThrow()
     {
-        if (!KemAlgorithm.MlKem512.IsEnabled())
-        {
-            return;
-        }
-
         using var kem = new KemInstance(KemAlgorithm.MlKem512);
         var (_, secretKey) = kem.GenerateKeypair();
         
@@ -89,11 +68,6 @@ public class KemTests
     [Fact]
     public void KemDispose_ShouldAllowMultipleCalls()
     {
-        if (!KemAlgorithm.MlKem512.IsEnabled())
-        {
-            return;
-        }
-
         var kem = new KemInstance(KemAlgorithm.MlKem512);
         
         kem.Dispose();
@@ -103,11 +77,6 @@ public class KemTests
     [Fact]
     public void KemUseAfterDispose_ShouldThrow()
     {
-        if (!KemAlgorithm.MlKem512.IsEnabled())
-        {
-            return;
-        }
-
         var kem = new KemInstance(KemAlgorithm.MlKem512);
         kem.Dispose();
         
