@@ -10,6 +10,15 @@ public class KemTests
     [InlineData(KemAlgorithm.MlKem512)]
     [InlineData(KemAlgorithm.MlKem768)]
     [InlineData(KemAlgorithm.MlKem1024)]
+    [InlineData(KemAlgorithm.Kyber512)]
+    [InlineData(KemAlgorithm.Kyber768)]
+    [InlineData(KemAlgorithm.Kyber1024)]
+    [InlineData(KemAlgorithm.FrodoKem640Aes)]
+    [InlineData(KemAlgorithm.FrodoKem640Shake)]
+    [InlineData(KemAlgorithm.FrodoKem976Aes)]
+    [InlineData(KemAlgorithm.FrodoKem976Shake)]
+    [InlineData(KemAlgorithm.FrodoKem1344Aes)]
+    [InlineData(KemAlgorithm.FrodoKem1344Shake)]
     public void KemEncapsDecaps_ShouldSucceed(KemAlgorithm algorithm)
     {
         using var kem = new KemInstance(algorithm);
@@ -81,5 +90,249 @@ public class KemTests
         kem.Dispose();
         
         Assert.Throws<ObjectDisposedException>(() => kem.GenerateKeypair());
+    }
+
+    [Theory]
+    [InlineData(KemAlgorithm.Kyber512)]
+    [InlineData(KemAlgorithm.Kyber768)]
+    [InlineData(KemAlgorithm.Kyber1024)]
+    public void KyberKem_ShouldSucceed(KemAlgorithm algorithm)
+    {
+        using var kem = new KemInstance(algorithm);
+        
+        // Generate keypair
+        var (publicKey, secretKey) = kem.GenerateKeypair();
+        
+        Assert.Equal(kem.PublicKeyLength, publicKey.Length);
+        Assert.Equal(kem.SecretKeyLength, secretKey.Length);
+        
+        // Test multiple encapsulations with same keys
+        for (int i = 0; i < 5; i++)
+        {
+            var (ciphertext, sharedSecret1) = kem.Encapsulate(publicKey);
+            var sharedSecret2 = kem.Decapsulate(secretKey, ciphertext);
+            
+            Assert.Equal(kem.CiphertextLength, ciphertext.Length);
+            Assert.Equal(kem.SharedSecretLength, sharedSecret1.Length);
+            Assert.Equal(kem.SharedSecretLength, sharedSecret2.Length);
+            Assert.Equal(sharedSecret1, sharedSecret2);
+        }
+    }
+
+    [Theory]
+    [InlineData(KemAlgorithm.FrodoKem640Aes)]
+    [InlineData(KemAlgorithm.FrodoKem640Shake)]
+    [InlineData(KemAlgorithm.FrodoKem976Aes)]
+    [InlineData(KemAlgorithm.FrodoKem976Shake)]
+    [InlineData(KemAlgorithm.FrodoKem1344Aes)]
+    [InlineData(KemAlgorithm.FrodoKem1344Shake)]
+    public void FrodoKem_ShouldSucceed(KemAlgorithm algorithm)
+    {
+        using var kem = new KemInstance(algorithm);
+        
+        // Generate keypair
+        var (publicKey, secretKey) = kem.GenerateKeypair();
+        
+        Assert.Equal(kem.PublicKeyLength, publicKey.Length);
+        Assert.Equal(kem.SecretKeyLength, secretKey.Length);
+        
+        // FrodoKEM typically has larger key sizes than other algorithms
+        Assert.True(kem.PublicKeyLength > 1000, $"FrodoKEM public key should be large: {kem.PublicKeyLength}");
+        Assert.True(kem.SecretKeyLength > 1000, $"FrodoKEM secret key should be large: {kem.SecretKeyLength}");
+        
+        // Test encapsulation/decapsulation
+        var (ciphertext, sharedSecret1) = kem.Encapsulate(publicKey);
+        var sharedSecret2 = kem.Decapsulate(secretKey, ciphertext);
+        
+        Assert.Equal(sharedSecret1, sharedSecret2);
+    }
+
+    [Theory]
+    [InlineData(KemAlgorithm.MlKem512)]
+    [InlineData(KemAlgorithm.Kyber512)]
+    [InlineData(KemAlgorithm.FrodoKem640Aes)]
+    public void KemKeyLengths_ShouldBeConsistent(KemAlgorithm algorithm)
+    {
+        using var kem = new KemInstance(algorithm);
+        
+        Assert.True(kem.PublicKeyLength > 0);
+        Assert.True(kem.SecretKeyLength > 0);
+        Assert.True(kem.CiphertextLength > 0);
+        Assert.True(kem.SharedSecretLength > 0);
+        
+        // Generated keys should match reported lengths
+        var (publicKey, secretKey) = kem.GenerateKeypair();
+        Assert.Equal(kem.PublicKeyLength, publicKey.Length);
+        Assert.Equal(kem.SecretKeyLength, secretKey.Length);
+        
+        // Encapsulation should produce correct lengths
+        var (ciphertext, sharedSecret) = kem.Encapsulate(publicKey);
+        Assert.Equal(kem.CiphertextLength, ciphertext.Length);
+        Assert.Equal(kem.SharedSecretLength, sharedSecret.Length);
+    }
+
+    [Theory]
+    [InlineData(KemAlgorithm.MlKem512)]
+    [InlineData(KemAlgorithm.MlKem768)]
+    [InlineData(KemAlgorithm.MlKem1024)]
+    public void MlKemAlgorithms_ShouldHaveProgressiveSizes(KemAlgorithm algorithm)
+    {
+        using var kem = new KemInstance(algorithm);
+        
+        // ML-KEM algorithms should have progressively larger key sizes
+        switch (algorithm)
+        {
+            case KemAlgorithm.MlKem512:
+                Assert.True(kem.PublicKeyLength > 700 && kem.PublicKeyLength < 1000);
+                Assert.True(kem.SecretKeyLength > 1500 && kem.SecretKeyLength < 2000);
+                break;
+            case KemAlgorithm.MlKem768:
+                Assert.True(kem.PublicKeyLength > 1000 && kem.PublicKeyLength < 1300);
+                Assert.True(kem.SecretKeyLength > 2300 && kem.SecretKeyLength < 2700);
+                break;
+            case KemAlgorithm.MlKem1024:
+                Assert.True(kem.PublicKeyLength > 1500);
+                Assert.True(kem.SecretKeyLength > 3000);
+                break;
+        }
+        
+        Assert.Equal(32, kem.SharedSecretLength);
+    }
+
+    [Fact]
+    public void KemMultipleInstances_ShouldWorkIndependently()
+    {
+        using var kem1 = new KemInstance(KemAlgorithm.MlKem512);
+        using var kem2 = new KemInstance(KemAlgorithm.Kyber512);
+        
+        var (pk1, sk1) = kem1.GenerateKeypair();
+        var (pk2, sk2) = kem2.GenerateKeypair();
+        
+        var (ct1, ss1_enc) = kem1.Encapsulate(pk1);
+        var (ct2, ss2_enc) = kem2.Encapsulate(pk2);
+        
+        var ss1_dec = kem1.Decapsulate(sk1, ct1);
+        var ss2_dec = kem2.Decapsulate(sk2, ct2);
+        
+        // Each should work with its own keys
+        Assert.Equal(ss1_enc, ss1_dec);
+        Assert.Equal(ss2_enc, ss2_dec);
+    }
+
+    [Fact]
+    public void KemNull_ShouldThrow()
+    {
+        using var kem = new KemInstance(KemAlgorithm.MlKem512);
+        var (publicKey, secretKey) = kem.GenerateKeypair();
+        var (ciphertext, _) = kem.Encapsulate(publicKey);
+        
+        Assert.Throws<NullReferenceException>(() => kem.Encapsulate(null!));
+        Assert.Throws<NullReferenceException>(() => kem.Decapsulate(null!, ciphertext));
+        Assert.Throws<NullReferenceException>(() => kem.Decapsulate(secretKey, null!));
+    }
+
+    [Fact]
+    public void KemRandomness_EncapsulationsShouldBeDifferent()
+    {
+        using var kem = new KemInstance(KemAlgorithm.MlKem512);
+        var (publicKey, secretKey) = kem.GenerateKeypair();
+        
+        // Multiple encapsulations should produce different ciphertexts but recoverable shared secrets
+        var results = new List<(byte[] ciphertext, byte[] sharedSecret)>();
+        
+        for (int i = 0; i < 5; i++)
+        {
+            var (ct, ss) = kem.Encapsulate(publicKey);
+            results.Add((ct, ss));
+            
+            // Verify decapsulation works
+            var recoveredSS = kem.Decapsulate(secretKey, ct);
+            Assert.Equal(ss, recoveredSS);
+        }
+        
+        // All ciphertexts should be different
+        for (int i = 0; i < results.Count; i++)
+        {
+            for (int j = i + 1; j < results.Count; j++)
+            {
+                Assert.NotEqual(results[i].ciphertext, results[j].ciphertext);
+
+                // Shared secrets should also be different
+                Assert.NotEqual(results[i].sharedSecret, results[j].sharedSecret);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task KemThreadSafety_MultipleOperations()
+    {
+        const int threadCount = 4;
+        const int operationsPerThread = 5;
+        var results = new bool[threadCount];
+        var tasks = new Task[threadCount];
+
+        for (int i = 0; i < threadCount; i++)
+        {
+            int threadIndex = i;
+            tasks[i] = Task.Run(() =>
+            {
+                try
+                {
+                    using var kem = new KemInstance(KemAlgorithm.MlKem512);
+                    for (int j = 0; j < operationsPerThread; j++)
+                    {
+                        var (pk, sk) = kem.GenerateKeypair();
+                        var (ct, ss1) = kem.Encapsulate(pk);
+                        var ss2 = kem.Decapsulate(sk, ct);
+                        
+                        if (!ss1.SequenceEqual(ss2))
+                        {
+                            results[threadIndex] = false;
+                            return;
+                        }
+                    }
+                    results[threadIndex] = true;
+                }
+                catch
+                {
+                    results[threadIndex] = false;
+                }
+            });
+        }
+
+        await Task.WhenAll(tasks);
+        
+        foreach (var result in results)
+        {
+            Assert.True(result);
+        }
+    }
+
+    [Theory]
+    [InlineData(KemAlgorithm.FrodoKem640Aes, KemAlgorithm.FrodoKem640Shake)]
+    [InlineData(KemAlgorithm.FrodoKem976Aes, KemAlgorithm.FrodoKem976Shake)]
+    [InlineData(KemAlgorithm.FrodoKem1344Aes, KemAlgorithm.FrodoKem1344Shake)]
+    public void FrodoKemVariants_ShouldHaveSameSizes(KemAlgorithm aesVariant, KemAlgorithm shakeVariant)
+    {
+        using var kemAes = new KemInstance(aesVariant);
+        using var kemShake = new KemInstance(shakeVariant);
+        
+        // AES and SHAKE variants of the same FrodoKEM should have same key sizes
+        Assert.Equal(kemAes.PublicKeyLength, kemShake.PublicKeyLength);
+        Assert.Equal(kemAes.SecretKeyLength, kemShake.SecretKeyLength);
+        Assert.Equal(kemAes.CiphertextLength, kemShake.CiphertextLength);
+        Assert.Equal(kemAes.SharedSecretLength, kemShake.SharedSecretLength);
+        
+        var (pkAes, skAes) = kemAes.GenerateKeypair();
+        var (pkShake, skShake) = kemShake.GenerateKeypair();
+        
+        var (ctAes, ssAes1) = kemAes.Encapsulate(pkAes);
+        var (ctShake, ssShake1) = kemShake.Encapsulate(pkShake);
+        
+        var ssAes2 = kemAes.Decapsulate(skAes, ctAes);
+        var ssShake2 = kemShake.Decapsulate(skShake, ctShake);
+        
+        Assert.Equal(ssAes1, ssAes2);
+        Assert.Equal(ssShake1, ssShake2);
     }
 }
