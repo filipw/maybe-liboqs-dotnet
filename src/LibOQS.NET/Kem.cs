@@ -20,6 +20,40 @@ public enum KemAlgorithm
     Kyber768,
     /// <summary>Kyber1024</summary>
     Kyber1024,
+    /// <summary>BIKE-L1</summary>
+    BikeL1,
+    /// <summary>BIKE-L3</summary>
+    BikeL3,
+    /// <summary>BIKE-L5</summary>
+    BikeL5,
+    /// <summary>HQC-128</summary>
+    Hqc128,
+    /// <summary>HQC-192</summary>
+    Hqc192,
+    /// <summary>HQC-256</summary>
+    Hqc256,
+    /// <summary>sntrup761 (NTRU Prime)</summary>
+    NtruPrimeSntrup761,
+    /// <summary>Classic-McEliece-348864</summary>
+    ClassicMcEliece348864,
+    /// <summary>Classic-McEliece-348864f</summary>
+    ClassicMcEliece348864f,
+    /// <summary>Classic-McEliece-460896</summary>
+    ClassicMcEliece460896,
+    /// <summary>Classic-McEliece-460896f</summary>
+    ClassicMcEliece460896f,
+    /// <summary>Classic-McEliece-6688128</summary>
+    ClassicMcEliece6688128,
+    /// <summary>Classic-McEliece-6688128f</summary>
+    ClassicMcEliece6688128f,
+    /// <summary>Classic-McEliece-6960119</summary>
+    ClassicMcEliece6960119,
+    /// <summary>Classic-McEliece-6960119f</summary>
+    ClassicMcEliece6960119f,
+    /// <summary>Classic-McEliece-8192128</summary>
+    ClassicMcEliece8192128,
+    /// <summary>Classic-McEliece-8192128f</summary>
+    ClassicMcEliece8192128f,
     /// <summary>FrodoKEM-640-AES</summary>
     FrodoKem640Aes,
     /// <summary>FrodoKEM-640-SHAKE</summary>
@@ -50,6 +84,23 @@ public static class KemAlgorithmExtensions
         KemAlgorithm.Kyber512 => Kem.OQS_KEM_alg_kyber_512,
         KemAlgorithm.Kyber768 => Kem.OQS_KEM_alg_kyber_768,
         KemAlgorithm.Kyber1024 => Kem.OQS_KEM_alg_kyber_1024,
+        KemAlgorithm.BikeL1 => Kem.OQS_KEM_alg_bike_l1,
+        KemAlgorithm.BikeL3 => Kem.OQS_KEM_alg_bike_l3,
+        KemAlgorithm.BikeL5 => Kem.OQS_KEM_alg_bike_l5,
+        KemAlgorithm.Hqc128 => Kem.OQS_KEM_alg_hqc_128,
+        KemAlgorithm.Hqc192 => Kem.OQS_KEM_alg_hqc_192,
+        KemAlgorithm.Hqc256 => Kem.OQS_KEM_alg_hqc_256,
+        KemAlgorithm.NtruPrimeSntrup761 => Kem.OQS_KEM_alg_ntruprime_sntrup761,
+        KemAlgorithm.ClassicMcEliece348864 => Kem.OQS_KEM_alg_classic_mceliece_348864,
+        KemAlgorithm.ClassicMcEliece348864f => Kem.OQS_KEM_alg_classic_mceliece_348864f,
+        KemAlgorithm.ClassicMcEliece460896 => Kem.OQS_KEM_alg_classic_mceliece_460896,
+        KemAlgorithm.ClassicMcEliece460896f => Kem.OQS_KEM_alg_classic_mceliece_460896f,
+        KemAlgorithm.ClassicMcEliece6688128 => Kem.OQS_KEM_alg_classic_mceliece_6688128,
+        KemAlgorithm.ClassicMcEliece6688128f => Kem.OQS_KEM_alg_classic_mceliece_6688128f,
+        KemAlgorithm.ClassicMcEliece6960119 => Kem.OQS_KEM_alg_classic_mceliece_6960119,
+        KemAlgorithm.ClassicMcEliece6960119f => Kem.OQS_KEM_alg_classic_mceliece_6960119f,
+        KemAlgorithm.ClassicMcEliece8192128 => Kem.OQS_KEM_alg_classic_mceliece_8192128,
+        KemAlgorithm.ClassicMcEliece8192128f => Kem.OQS_KEM_alg_classic_mceliece_8192128f,
         KemAlgorithm.FrodoKem640Aes => Kem.OQS_KEM_alg_frodokem_640_aes,
         KemAlgorithm.FrodoKem640Shake => Kem.OQS_KEM_alg_frodokem_640_shake,
         KemAlgorithm.FrodoKem976Aes => Kem.OQS_KEM_alg_frodokem_976_aes,
@@ -110,7 +161,7 @@ public class KemInstance : IDisposable
     {
         LibOqs.EnsureInitialized();
         Algorithm = algorithm;
-        
+
         if (!algorithm.IsEnabled())
         {
             throw new AlgorithmNotSupportedException(algorithm.GetIdentifier());
@@ -167,7 +218,7 @@ public class KemInstance : IDisposable
     public (byte[] Ciphertext, byte[] SharedSecret) Encapsulate(byte[] publicKey)
     {
         ThrowIfDisposed();
-        
+
         if (publicKey.Length != PublicKeyLength)
         {
             throw new ArgumentException($"Public key must be {PublicKeyLength} bytes");
@@ -197,12 +248,12 @@ public class KemInstance : IDisposable
     public byte[] Decapsulate(byte[] secretKey, byte[] ciphertext)
     {
         ThrowIfDisposed();
-        
+
         if (secretKey.Length != SecretKeyLength)
         {
             throw new ArgumentException($"Secret key must be {SecretKeyLength} bytes");
         }
-        
+
         if (ciphertext.Length != CiphertextLength)
         {
             throw new ArgumentException($"Ciphertext must be {CiphertextLength} bytes");

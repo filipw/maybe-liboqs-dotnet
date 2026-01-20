@@ -1,6 +1,6 @@
+using System.Text;
 using LibOQS.NET;
 using Spectre.Console;
-using System.Text;
 
 namespace Examples;
 
@@ -22,8 +22,8 @@ class Program
             new SelectionPrompt<string>()
                 .Title("Choose the [green]demo[/] to run?")
                 .AddChoices([
-                    "ML-KEM (Key Encapsulation)",
-                        "ML-DSA (Digital Signature)",
+                    "KEM (Key Encapsulation)",
+                        "DSA (Digital Signature)",
                         "Signed Key Exchange",
                         "Algorithm Comparison",
                         "Exit"
@@ -31,10 +31,10 @@ class Program
 
         switch (demo)
         {
-            case "ML-KEM (Key Encapsulation)":
+            case "KEM (Key Encapsulation)":
                 LibOqsDemo.RunMlKem();
                 break;
-            case "ML-DSA (Digital Signature)":
+            case "DSA (Digital Signature)":
                 LibOqsDemo.RunMlDsa();
                 break;
             case "Signed Key Exchange":
@@ -55,23 +55,27 @@ public static class LibOqsDemo
 {
     public static void RunMlDsa()
     {
-        AnsiConsole.Write(new Rule("[blue]ML-DSA Digital Signature Demo[/]").RuleStyle("blue"));
+        AnsiConsole.Write(new Rule("[blue]Digital Signature Demo[/]").RuleStyle("blue"));
 
-        var raw = "Hello, ML-DSA from LibOQS.NET!";
+        var enabledAlgorithms = Enum.GetValues<SigAlgorithm>()
+            .Where(a => a.IsEnabled())
+            .ToList();
+
+        var algorithm = AnsiConsole.Prompt(
+            new SelectionPrompt<SigAlgorithm>()
+                .Title("Select a [green]Signature Algorithm[/] to demo:")
+                .PageSize(10)
+                .AddChoices(enabledAlgorithms));
+
+        var raw = $"Hello, {algorithm} from LibOQS.NET!";
         var data = Encoding.UTF8.GetBytes(raw);
-        
+
         PrintPanel("Message", [
             $"Raw: {raw}",
             $"Encoded: {data.PrettyPrint()}"
         ]);
 
-        if (!SigAlgorithm.MlDsa65.IsEnabled())
-        {
-            PrintPanel("Error", ["ML-DSA-65 is not enabled in this build"]);
-            return;
-        }
-
-        using var sig = new SigInstance(SigAlgorithm.MlDsa65);
+        using var sig = new SigInstance(algorithm);
 
         // Generate key pair
         var (publicKey, secretKey) = sig.GenerateKeypair();
@@ -103,15 +107,19 @@ public static class LibOqsDemo
 
     public static void RunMlKem()
     {
-        AnsiConsole.Write(new Rule("[green]ML-KEM Key Encapsulation Demo[/]").RuleStyle("green"));
+        AnsiConsole.Write(new Rule("[green]Key Encapsulation Demo[/]").RuleStyle("green"));
 
-        if (!KemAlgorithm.MlKem768.IsEnabled())
-        {
-            PrintPanel("Error", ["ML-KEM-768 is not enabled in this build"]);
-            return;
-        }
+        var enabledAlgorithms = Enum.GetValues<KemAlgorithm>()
+            .Where(a => a.IsEnabled())
+            .ToList();
 
-        using var kem = new KemInstance(KemAlgorithm.MlKem768);
+        var algorithm = AnsiConsole.Prompt(
+            new SelectionPrompt<KemAlgorithm>()
+                .Title("Select a [green]KEM Algorithm[/] to demo:")
+                .PageSize(10)
+                .AddChoices(enabledAlgorithms));
+
+        using var kem = new KemInstance(algorithm);
 
         // Generate Alice's key pair
         var (alicePublicKey, aliceSecretKey) = kem.GenerateKeypair();
@@ -251,9 +259,9 @@ public static class LibOqsDemo
 
             var secLevel = kemAlg switch
             {
-                KemAlgorithm.MlKem512 or KemAlgorithm.Kyber512 => "Level 1",
-                KemAlgorithm.MlKem768 or KemAlgorithm.Kyber768 => "Level 3",
-                KemAlgorithm.MlKem1024 or KemAlgorithm.Kyber1024 => "Level 5",
+                KemAlgorithm.MlKem512 or KemAlgorithm.Kyber512 or KemAlgorithm.BikeL1 or KemAlgorithm.Hqc128 or KemAlgorithm.ClassicMcEliece348864 => "Level 1",
+                KemAlgorithm.MlKem768 or KemAlgorithm.Kyber768 or KemAlgorithm.BikeL3 or KemAlgorithm.Hqc192 or KemAlgorithm.NtruPrimeSntrup761 or KemAlgorithm.ClassicMcEliece460896 => "Level 3",
+                KemAlgorithm.MlKem1024 or KemAlgorithm.Kyber1024 or KemAlgorithm.BikeL5 or KemAlgorithm.Hqc256 or KemAlgorithm.ClassicMcEliece6688128 or KemAlgorithm.ClassicMcEliece6960119 or KemAlgorithm.ClassicMcEliece8192128 => "Level 5",
                 _ when kemAlg.ToString().Contains("640") => "Level 1",
                 _ when kemAlg.ToString().Contains("976") => "Level 3",
                 _ when kemAlg.ToString().Contains("1344") => "Level 5",
@@ -289,10 +297,18 @@ public static class LibOqsDemo
 
             var secLevel = sigAlg switch
             {
-                SigAlgorithm.MlDsa44 or SigAlgorithm.Dilithium2 or SigAlgorithm.Falcon512 => "Level 1",
+                SigAlgorithm.MlDsa44 or SigAlgorithm.Dilithium2 or SigAlgorithm.Falcon512 or SigAlgorithm.FalconPadded512 => "Level 1",
                 SigAlgorithm.MlDsa65 or SigAlgorithm.Dilithium3 => "Level 3",
-                SigAlgorithm.MlDsa87 or SigAlgorithm.Dilithium5 or SigAlgorithm.Falcon1024 => "Level 5",
+                SigAlgorithm.MlDsa87 or SigAlgorithm.Dilithium5 or SigAlgorithm.Falcon1024 or SigAlgorithm.FalconPadded1024 => "Level 5",
                 _ when sigAlg.ToString().Contains("128") => "Level 1",
+                _ when sigAlg.ToString().Contains("192") => "Level 3",
+                _ when sigAlg.ToString().Contains("256") => "Level 5",
+                _ when sigAlg.ToString().Contains("Mayo1") || sigAlg.ToString().Contains("Mayo2") => "Level 1",
+                _ when sigAlg.ToString().Contains("Mayo3") => "Level 3",
+                _ when sigAlg.ToString().Contains("Mayo5") => "Level 5",
+                _ when sigAlg.ToString().Contains("OvIs") || sigAlg.ToString().Contains("OvIp") => "Level 1",
+                _ when sigAlg.ToString().Contains("OvIii") => "Level 3",
+                _ when sigAlg.ToString().Contains("OvV") => "Level 5",
                 _ => "Various"
             };
 
