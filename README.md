@@ -113,8 +113,8 @@ finally
 
 ## Features
 
-- **Key Encapsulation Mechanisms (KEMs)**: ML-KEM, Kyber, FrodoKEM, and more
-- **Digital Signatures**: ML-DSA, Dilithium, Falcon, SPHINCS+, and more
+- **Key Encapsulation Mechanisms (KEMs)**: ML-KEM, Kyber, BIKE, HQC, Classic McEliece, NTRU Prime, FrodoKEM
+- **Digital Signatures**: ML-DSA, Dilithium, Falcon, SPHINCS+, MAYO, CROSS, UOV
 - **Type-safe API**: Strong typing with enums for algorithms and proper resource management
 - **Memory management**: Automatic cleanup of native resources using IDisposable pattern
 - **Cross-platform**: Supports Windows x64, Windows ARM64, macOS ARM64, Linux x64, and Linux ARM64
@@ -126,14 +126,21 @@ finally
 
 - **ML-KEM** (NIST standardized): ML-KEM-512, ML-KEM-768, ML-KEM-1024
 - **Kyber**: Kyber512, Kyber768, Kyber1024
+- **BIKE**: BIKE-L1, BIKE-L3, BIKE-L5
+- **HQC**: HQC-128, HQC-192, HQC-256
+- **Classic McEliece**: All 10 variants (e.g., 348864, 460896, 6688128, 6960119, 8192128 with fast variants)
+- **NTRU Prime**: sntrup761
 - **FrodoKEM**: FrodoKEM-640-AES, FrodoKEM-640-SHAKE, FrodoKEM-976-AES, FrodoKEM-976-SHAKE, FrodoKEM-1344-AES, FrodoKEM-1344-SHAKE
 
 ### Digital Signatures
 
 - **ML-DSA** (NIST standardized): ML-DSA-44, ML-DSA-65, ML-DSA-87
 - **Dilithium**: Dilithium2, Dilithium3, Dilithium5
-- **Falcon**: Falcon-512, Falcon-1024
-- **SPHINCS+**: Various parameter sets
+- **Falcon**: Falcon-512, Falcon-1024, Falcon-Padded-512, Falcon-Padded-1024
+- **SPHINCS+**: All "simple" variants (SHA2 and SHAKE, 128/192/256, fast/small)
+- **MAYO**: MAYO-1, MAYO-2, MAYO-3, MAYO-5
+- **CROSS**: All 18 variants (RSDP/RSDPG, Balanced/Fast/Small)
+- **UOV**: All 12 variants (Ip, Is, III, V; with pkc/skc variants)
 
 ## Algorithm Availability
 
@@ -222,7 +229,7 @@ git submodule update
    This will:
    - Configure and build liboqs as a shared library
    - Copy the resulting DLL/so/dylib to the appropriate directories
-   - Enable common quantum-resistant algorithms (ML-KEM, ML-DSA, Kyber, Dilithium, Falcon, FrodoKEM)
+   - Enable all common quantum-resistant algorithms (ML-KEM, ML-DSA, Kyber, Dilithium, Falcon, FrodoKEM, BIKE, HQC, SPHINCS+, etc.)
 
 2. **Build the .NET libraries:**
 

@@ -50,9 +50,16 @@ try {
             "-DOQS_ENABLE_KEM_ML_KEM=ON"
             "-DOQS_ENABLE_KEM_KYBER=ON"
             "-DOQS_ENABLE_KEM_FRODOKEM=ON"
+            "-DOQS_ENABLE_KEM_HQC=ON"
+            "-DOQS_ENABLE_KEM_NTRUPRIME=ON"
+            "-DOQS_ENABLE_KEM_CLASSIC_MCELIECE=ON"
             "-DOQS_ENABLE_SIG_ML_DSA=ON"
             "-DOQS_ENABLE_SIG_DILITHIUM=ON"
             "-DOQS_ENABLE_SIG_FALCON=ON"
+            "-DOQS_ENABLE_SIG_SPHINCS=ON"
+            "-DOQS_ENABLE_SIG_MAYO=ON"
+            "-DOQS_ENABLE_SIG_CROSS=ON"
+            "-DOQS_ENABLE_SIG_UOV=ON"
         )
         
         & cmake @cmakeArgs

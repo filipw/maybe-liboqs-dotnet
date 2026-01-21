@@ -6,7 +6,7 @@ namespace LibOQS.NET.Tests;
 public class SigTests
 {
 
-    [Theory]
+    [SkippableTheory]
     [InlineData(SigAlgorithm.MlDsa44)]
     [InlineData(SigAlgorithm.MlDsa65)]
     [InlineData(SigAlgorithm.MlDsa87)]
@@ -15,8 +15,57 @@ public class SigTests
     [InlineData(SigAlgorithm.Dilithium5)]
     [InlineData(SigAlgorithm.Falcon512)]
     [InlineData(SigAlgorithm.Falcon1024)]
+    [InlineData(SigAlgorithm.FalconPadded512)]
+    [InlineData(SigAlgorithm.FalconPadded1024)]
+    [InlineData(SigAlgorithm.SphincsPlusSha2128fSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusSha2128sSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusSha2192fSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusSha2192sSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusSha2256fSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusSha2256sSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusShake128fSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusShake128sSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusShake192fSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusShake192sSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusShake256fSimple)]
+    [InlineData(SigAlgorithm.SphincsPlusShake256sSimple)]
+    [InlineData(SigAlgorithm.Mayo1)]
+    [InlineData(SigAlgorithm.Mayo2)]
+    [InlineData(SigAlgorithm.Mayo3)]
+    [InlineData(SigAlgorithm.Mayo5)]
+    [InlineData(SigAlgorithm.CrossRsdp128Balanced)]
+    [InlineData(SigAlgorithm.CrossRsdp128Fast)]
+    [InlineData(SigAlgorithm.CrossRsdp128Small)]
+    [InlineData(SigAlgorithm.CrossRsdp192Balanced)]
+    [InlineData(SigAlgorithm.CrossRsdp192Fast)]
+    [InlineData(SigAlgorithm.CrossRsdp192Small)]
+    [InlineData(SigAlgorithm.CrossRsdp256Balanced)]
+    [InlineData(SigAlgorithm.CrossRsdp256Fast)]
+    [InlineData(SigAlgorithm.CrossRsdp256Small)]
+    [InlineData(SigAlgorithm.CrossRsdpg128Balanced)]
+    [InlineData(SigAlgorithm.CrossRsdpg128Fast)]
+    [InlineData(SigAlgorithm.CrossRsdpg128Small)]
+    [InlineData(SigAlgorithm.CrossRsdpg192Balanced)]
+    [InlineData(SigAlgorithm.CrossRsdpg192Fast)]
+    [InlineData(SigAlgorithm.CrossRsdpg192Small)]
+    [InlineData(SigAlgorithm.CrossRsdpg256Balanced)]
+    [InlineData(SigAlgorithm.CrossRsdpg256Fast)]
+    [InlineData(SigAlgorithm.CrossRsdpg256Small)]
+    [InlineData(SigAlgorithm.UovOvIs)]
+    [InlineData(SigAlgorithm.UovOvIp)]
+    [InlineData(SigAlgorithm.UovOvIii)]
+    [InlineData(SigAlgorithm.UovOvV)]
+    [InlineData(SigAlgorithm.UovOvIsPkc)]
+    [InlineData(SigAlgorithm.UovOvIpPkc)]
+    [InlineData(SigAlgorithm.UovOvIiiPkc)]
+    [InlineData(SigAlgorithm.UovOvVPkc)]
+    [InlineData(SigAlgorithm.UovOvIsPkcSkc)]
+    [InlineData(SigAlgorithm.UovOvIpPkcSkc)]
+    [InlineData(SigAlgorithm.UovOvIiiPkcSkc)]
+    [InlineData(SigAlgorithm.UovOvVPkcSkc)]
     public void SigSignVerify_ShouldSucceed(SigAlgorithm algorithm)
     {
+        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
         using var sig = new SigInstance(algorithm);
 
         // Generate keypair
@@ -94,12 +143,13 @@ public class SigTests
         Assert.True(isValid);
     }
 
-    [Theory]
+    [SkippableTheory]
     [InlineData(SigAlgorithm.Dilithium2)]
     [InlineData(SigAlgorithm.Dilithium3)]
     [InlineData(SigAlgorithm.Dilithium5)]
     public void DilithiumSignVerify_ShouldSucceed(SigAlgorithm algorithm)
     {
+        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
         using var sig = new SigInstance(algorithm);
 
         // Generate keypair
@@ -128,11 +178,12 @@ public class SigTests
         }
     }
 
-    [Theory]
+    [SkippableTheory]
     [InlineData(SigAlgorithm.Falcon512)]
     [InlineData(SigAlgorithm.Falcon1024)]
     public void FalconSignVerify_ShouldSucceed(SigAlgorithm algorithm)
     {
+        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
         using var sig = new SigInstance(algorithm);
 
         // Generate keypair
@@ -170,12 +221,18 @@ public class SigTests
         }
     }
 
-    [Theory]
+    [SkippableTheory]
     [InlineData(SigAlgorithm.MlDsa44)]
     [InlineData(SigAlgorithm.Dilithium2)]
     [InlineData(SigAlgorithm.Falcon512)]
+    [InlineData(SigAlgorithm.FalconPadded512)]
+    [InlineData(SigAlgorithm.SphincsPlusSha2128fSimple)]
+    [InlineData(SigAlgorithm.Mayo1)]
+    [InlineData(SigAlgorithm.CrossRsdp128Balanced)]
+    [InlineData(SigAlgorithm.UovOvIs)]
     public void SigKeyLengths_ShouldBeConsistent(SigAlgorithm algorithm)
     {
+        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
         using var sig = new SigInstance(algorithm);
 
         // Key lengths should be positive
@@ -220,11 +277,12 @@ public class SigTests
         }
     }
 
-    [Theory]
+    [SkippableTheory]
     [InlineData(SigAlgorithm.MlDsa44)]
     [InlineData(SigAlgorithm.Dilithium2)]
     public void SigLargeMessage_ShouldWork(SigAlgorithm algorithm)
     {
+        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
         using var sig = new SigInstance(algorithm);
         var (publicKey, secretKey) = sig.GenerateKeypair();
 
@@ -299,12 +357,13 @@ public class SigTests
         Assert.False(isValid);
     }
 
-    [Theory]
+    [SkippableTheory]
     [InlineData(SigAlgorithm.MlDsa44)]
     [InlineData(SigAlgorithm.MlDsa65)]
     [InlineData(SigAlgorithm.MlDsa87)]
     public void MlDsaAlgorithms_ShouldHaveCorrectSecurityLevels(SigAlgorithm algorithm)
     {
+        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
         using var sig = new SigInstance(algorithm);
 
         // ML-DSA algorithms should have progressively larger keys and signatures
@@ -328,11 +387,14 @@ public class SigTests
         }
     }
 
-    [Theory]
+    [SkippableTheory]
     [InlineData(SigAlgorithm.Falcon512)]
     [InlineData(SigAlgorithm.Falcon1024)]
+    [InlineData(SigAlgorithm.FalconPadded512)]
+    [InlineData(SigAlgorithm.FalconPadded1024)]
     public void FalconAlgorithms_ShouldHaveCompactSignatures(SigAlgorithm algorithm)
     {
+        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
         using var sig = new SigInstance(algorithm);
         var (publicKey, secretKey) = sig.GenerateKeypair();
         var message = "Falcon signature test"u8.ToArray();
