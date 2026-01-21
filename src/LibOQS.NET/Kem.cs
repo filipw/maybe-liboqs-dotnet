@@ -32,6 +32,18 @@ public enum KemAlgorithm
     Hqc192,
     /// <summary>HQC-256</summary>
     Hqc256,
+    /// <summary>NTRU-HPS-2048-509</summary>
+    NtruHps2048509,
+    /// <summary>NTRU-HPS-2048-677</summary>
+    NtruHps2048677,
+    /// <summary>NTRU-HPS-4096-821</summary>
+    NtruHps4096821,
+    /// <summary>NTRU-HPS-4096-1229</summary>
+    NtruHps40961229,
+    /// <summary>NTRU-HRSS-701</summary>
+    NtruHrss701,
+    /// <summary>NTRU-HRSS-1373</summary>
+    NtruHrss1373,
     /// <summary>sntrup761 (NTRU Prime)</summary>
     NtruPrimeSntrup761,
     /// <summary>Classic-McEliece-348864</summary>
@@ -90,6 +102,12 @@ public static class KemAlgorithmExtensions
         KemAlgorithm.Hqc128 => Kem.OQS_KEM_alg_hqc_128,
         KemAlgorithm.Hqc192 => Kem.OQS_KEM_alg_hqc_192,
         KemAlgorithm.Hqc256 => Kem.OQS_KEM_alg_hqc_256,
+        KemAlgorithm.NtruHps2048509 => Kem.OQS_KEM_alg_ntru_hps2048509,
+        KemAlgorithm.NtruHps2048677 => Kem.OQS_KEM_alg_ntru_hps2048677,
+        KemAlgorithm.NtruHps4096821 => Kem.OQS_KEM_alg_ntru_hps4096821,
+        KemAlgorithm.NtruHps40961229 => Kem.OQS_KEM_alg_ntru_hps40961229,
+        KemAlgorithm.NtruHrss701 => Kem.OQS_KEM_alg_ntru_hrss701,
+        KemAlgorithm.NtruHrss1373 => Kem.OQS_KEM_alg_ntru_hrss1373,
         KemAlgorithm.NtruPrimeSntrup761 => Kem.OQS_KEM_alg_ntruprime_sntrup761,
         KemAlgorithm.ClassicMcEliece348864 => Kem.OQS_KEM_alg_classic_mceliece_348864,
         KemAlgorithm.ClassicMcEliece348864f => Kem.OQS_KEM_alg_classic_mceliece_348864f,
@@ -155,6 +173,16 @@ public class KemInstance : IDisposable
     public int SharedSecretLength => (int)_kem.length_shared_secret;
 
     /// <summary>
+    /// Length of seeds for derandomized keypair generation in bytes
+    /// </summary>
+    public int KeypairSeedLength => (int)_kem.length_keypair_seed;
+
+    /// <summary>
+    /// Length of seeds for derandomized encapsulation in bytes
+    /// </summary>
+    public int EncapsSeedLength => (int)_kem.length_encaps_seed;
+
+    /// <summary>
     /// Create a new KEM instance
     /// </summary>
     public KemInstance(KemAlgorithm algorithm)
@@ -190,9 +218,14 @@ public class KemInstance : IDisposable
     /// <summary>
     /// Generate a new keypair
     /// </summary>
-    public (byte[] PublicKey, byte[] SecretKey) GenerateKeypair()
+    public (byte[] PublicKey, byte[] SecretKey) GenerateKeypair(byte[]? seed = null)
     {
         ThrowIfDisposed();
+
+        if (seed != null && seed.Length != KeypairSeedLength)
+        {
+            throw new ArgumentException($"Seed must be {KeypairSeedLength} bytes");
+        }
 
         var publicKey = new byte[PublicKeyLength];
         var secretKey = new byte[SecretKeyLength];
@@ -201,7 +234,19 @@ public class KemInstance : IDisposable
         {
             fixed (byte* pkPtr = publicKey, skPtr = secretKey)
             {
-                var result = Kem.OQS_KEM_keypair(_kemPtr, (IntPtr)pkPtr, (IntPtr)skPtr);
+                Common.OqsStatus result;
+                if (seed != null)
+                {
+                    fixed (byte* seedPtr = seed)
+                    {
+                        result = Kem.OQS_KEM_keypair_derand(_kemPtr, (IntPtr)pkPtr, (IntPtr)skPtr, (IntPtr)seedPtr);
+                    }
+                }
+                else
+                {
+                    result = Kem.OQS_KEM_keypair(_kemPtr, (IntPtr)pkPtr, (IntPtr)skPtr);
+                }
+
                 if (result != Common.OqsStatus.Success)
                 {
                     throw new OqsException("Failed to generate keypair");
@@ -215,13 +260,18 @@ public class KemInstance : IDisposable
     /// <summary>
     /// Encapsulate a shared secret using the public key
     /// </summary>
-    public (byte[] Ciphertext, byte[] SharedSecret) Encapsulate(byte[] publicKey)
+    public (byte[] Ciphertext, byte[] SharedSecret) Encapsulate(byte[] publicKey, byte[]? seed = null)
     {
         ThrowIfDisposed();
 
         if (publicKey.Length != PublicKeyLength)
         {
             throw new ArgumentException($"Public key must be {PublicKeyLength} bytes");
+        }
+
+        if (seed != null && seed.Length != EncapsSeedLength)
+        {
+            throw new ArgumentException($"Seed must be {EncapsSeedLength} bytes");
         }
 
         var ciphertext = new byte[CiphertextLength];
@@ -231,7 +281,19 @@ public class KemInstance : IDisposable
         {
             fixed (byte* pkPtr = publicKey, ctPtr = ciphertext, ssPtr = sharedSecret)
             {
-                var result = Kem.OQS_KEM_encaps(_kemPtr, (IntPtr)ctPtr, (IntPtr)ssPtr, (IntPtr)pkPtr);
+                Common.OqsStatus result;
+                if (seed != null)
+                {
+                    fixed (byte* seedPtr = seed)
+                    {
+                        result = Kem.OQS_KEM_encaps_derand(_kemPtr, (IntPtr)ctPtr, (IntPtr)ssPtr, (IntPtr)pkPtr, (IntPtr)seedPtr);
+                    }
+                }
+                else
+                {
+                    result = Kem.OQS_KEM_encaps(_kemPtr, (IntPtr)ctPtr, (IntPtr)ssPtr, (IntPtr)pkPtr);
+                }
+
                 if (result != Common.OqsStatus.Success)
                 {
                     throw new OqsException("Failed to encapsulate");
