@@ -14,12 +14,6 @@ public enum SigAlgorithm
     MlDsa65,
     /// <summary>ML-DSA-87 (NIST standardized)</summary>
     MlDsa87,
-    /// <summary>Dilithium2</summary>
-    Dilithium2,
-    /// <summary>Dilithium3</summary>
-    Dilithium3,
-    /// <summary>Dilithium5</summary>
-    Dilithium5,
     /// <summary>Falcon-512</summary>
     Falcon512,
     /// <summary>Falcon-1024</summary>
@@ -120,6 +114,54 @@ public enum SigAlgorithm
     UovOvIiiPkcSkc,
     /// <summary>OV-V-pkc-skc</summary>
     UovOvVPkcSkc,
+    /// <summary>SLH-DSA-SHA2-128s-pure</summary>
+    SlhDsaSha2128sPure,
+    /// <summary>SLH-DSA-SHA2-128f-pure</summary>
+    SlhDsaSha2128fPure,
+    /// <summary>SLH-DSA-SHA2-192s-pure</summary>
+    SlhDsaSha2192sPure,
+    /// <summary>SLH-DSA-SHA2-192f-pure</summary>
+    SlhDsaSha2192fPure,
+    /// <summary>SLH-DSA-SHA2-256s-pure</summary>
+    SlhDsaSha2256sPure,
+    /// <summary>SLH-DSA-SHA2-256f-pure</summary>
+    SlhDsaSha2256fPure,
+    /// <summary>SLH-DSA-SHAKE-128s-pure</summary>
+    SlhDsaShake128sPure,
+    /// <summary>SLH-DSA-SHAKE-128f-pure</summary>
+    SlhDsaShake128fPure,
+    /// <summary>SLH-DSA-SHAKE-192s-pure</summary>
+    SlhDsaShake192sPure,
+    /// <summary>SLH-DSA-SHAKE-192f-pure</summary>
+    SlhDsaShake192fPure,
+    /// <summary>SLH-DSA-SHAKE-256s-pure</summary>
+    SlhDsaShake256sPure,
+    /// <summary>SLH-DSA-SHAKE-256f-pure</summary>
+    SlhDsaShake256fPure,
+    /// <summary>SNOVA_24_5_4</summary>
+    Snova24_5_4,
+    /// <summary>SNOVA_24_5_4_SHAKE</summary>
+    Snova24_5_4_Shake,
+    /// <summary>SNOVA_24_5_4_esk</summary>
+    Snova24_5_4_Esk,
+    /// <summary>SNOVA_24_5_4_SHAKE_esk</summary>
+    Snova24_5_4_ShakeEsk,
+    /// <summary>SNOVA_37_17_2</summary>
+    Snova37_17_2,
+    /// <summary>SNOVA_25_8_3</summary>
+    Snova25_8_3,
+    /// <summary>SNOVA_56_25_2</summary>
+    Snova56_25_2,
+    /// <summary>SNOVA_49_11_3</summary>
+    Snova49_11_3,
+    /// <summary>SNOVA_37_8_4</summary>
+    Snova37_8_4,
+    /// <summary>SNOVA_24_5_5</summary>
+    Snova24_5_5,
+    /// <summary>SNOVA_60_10_4</summary>
+    Snova60_10_4,
+    /// <summary>SNOVA_29_6_5</summary>
+    Snova29_6_5,
 }
 
 /// <summary>
@@ -135,9 +177,6 @@ public static class SigAlgorithmExtensions
         SigAlgorithm.MlDsa44 => Sig.OQS_SIG_alg_ml_dsa_44,
         SigAlgorithm.MlDsa65 => Sig.OQS_SIG_alg_ml_dsa_65,
         SigAlgorithm.MlDsa87 => Sig.OQS_SIG_alg_ml_dsa_87,
-        SigAlgorithm.Dilithium2 => Sig.OQS_SIG_alg_dilithium2,
-        SigAlgorithm.Dilithium3 => Sig.OQS_SIG_alg_dilithium3,
-        SigAlgorithm.Dilithium5 => Sig.OQS_SIG_alg_dilithium5,
         SigAlgorithm.Falcon512 => Sig.OQS_SIG_alg_falcon_512,
         SigAlgorithm.Falcon1024 => Sig.OQS_SIG_alg_falcon_1024,
         SigAlgorithm.FalconPadded512 => Sig.OQS_SIG_alg_falcon_padded_512,
@@ -188,6 +227,30 @@ public static class SigAlgorithmExtensions
         SigAlgorithm.UovOvIpPkcSkc => Sig.OQS_SIG_alg_uov_ov_Ip_pkc_skc,
         SigAlgorithm.UovOvIiiPkcSkc => Sig.OQS_SIG_alg_uov_ov_III_pkc_skc,
         SigAlgorithm.UovOvVPkcSkc => Sig.OQS_SIG_alg_uov_ov_V_pkc_skc,
+        SigAlgorithm.SlhDsaSha2128sPure => Sig.OQS_SIG_alg_slh_dsa_sha2_128s_pure,
+        SigAlgorithm.SlhDsaSha2128fPure => Sig.OQS_SIG_alg_slh_dsa_sha2_128f_pure,
+        SigAlgorithm.SlhDsaSha2192sPure => Sig.OQS_SIG_alg_slh_dsa_sha2_192s_pure,
+        SigAlgorithm.SlhDsaSha2192fPure => Sig.OQS_SIG_alg_slh_dsa_sha2_192f_pure,
+        SigAlgorithm.SlhDsaSha2256sPure => Sig.OQS_SIG_alg_slh_dsa_sha2_256s_pure,
+        SigAlgorithm.SlhDsaSha2256fPure => Sig.OQS_SIG_alg_slh_dsa_sha2_256f_pure,
+        SigAlgorithm.SlhDsaShake128sPure => Sig.OQS_SIG_alg_slh_dsa_shake_128s_pure,
+        SigAlgorithm.SlhDsaShake128fPure => Sig.OQS_SIG_alg_slh_dsa_shake_128f_pure,
+        SigAlgorithm.SlhDsaShake192sPure => Sig.OQS_SIG_alg_slh_dsa_shake_192s_pure,
+        SigAlgorithm.SlhDsaShake192fPure => Sig.OQS_SIG_alg_slh_dsa_shake_192f_pure,
+        SigAlgorithm.SlhDsaShake256sPure => Sig.OQS_SIG_alg_slh_dsa_shake_256s_pure,
+        SigAlgorithm.SlhDsaShake256fPure => Sig.OQS_SIG_alg_slh_dsa_shake_256f_pure,
+        SigAlgorithm.Snova24_5_4 => Sig.OQS_SIG_alg_snova_24_5_4,
+        SigAlgorithm.Snova24_5_4_Shake => Sig.OQS_SIG_alg_snova_24_5_4_shake,
+        SigAlgorithm.Snova24_5_4_Esk => Sig.OQS_SIG_alg_snova_24_5_4_esk,
+        SigAlgorithm.Snova24_5_4_ShakeEsk => Sig.OQS_SIG_alg_snova_24_5_4_shake_esk,
+        SigAlgorithm.Snova37_17_2 => Sig.OQS_SIG_alg_snova_37_17_2,
+        SigAlgorithm.Snova25_8_3 => Sig.OQS_SIG_alg_snova_25_8_3,
+        SigAlgorithm.Snova56_25_2 => Sig.OQS_SIG_alg_snova_56_25_2,
+        SigAlgorithm.Snova49_11_3 => Sig.OQS_SIG_alg_snova_49_11_3,
+        SigAlgorithm.Snova37_8_4 => Sig.OQS_SIG_alg_snova_37_8_4,
+        SigAlgorithm.Snova24_5_5 => Sig.OQS_SIG_alg_snova_24_5_5,
+        SigAlgorithm.Snova60_10_4 => Sig.OQS_SIG_alg_snova_60_10_4,
+        SigAlgorithm.Snova29_6_5 => Sig.OQS_SIG_alg_snova_29_6_5,
         _ => throw new ArgumentException($"Unknown algorithm: {algorithm}")
     };
 
@@ -229,6 +292,11 @@ public class SigInstance : IDisposable
     /// Maximum length of signatures in bytes
     /// </summary>
     public int MaxSignatureLength => (int)_sig.length_signature;
+
+    /// <summary>
+    /// Whether the algorithm supports context strings
+    /// </summary>
+    public bool SupportsContextString => Sig.OQS_SIG_supports_ctx_str(Algorithm.GetIdentifier());
 
     /// <summary>
     /// Create a new signature instance
@@ -291,13 +359,18 @@ public class SigInstance : IDisposable
     /// <summary>
     /// Sign a message
     /// </summary>
-    public byte[] Sign(byte[] message, byte[] secretKey)
+    public byte[] Sign(byte[] message, byte[] secretKey, byte[]? ctxStr = null)
     {
         ThrowIfDisposed();
 
         if (secretKey.Length != SecretKeyLength)
         {
             throw new ArgumentException($"Secret key must be {SecretKeyLength} bytes");
+        }
+
+        if (ctxStr != null && !SupportsContextString)
+        {
+            throw new ArgumentException($"Algorithm {Algorithm} does not support context strings");
         }
 
         var signature = new byte[MaxSignatureLength];
@@ -307,8 +380,21 @@ public class SigInstance : IDisposable
         {
             fixed (byte* msgPtr = message, skPtr = secretKey, sigPtr = signature)
             {
-                var result = Sig.OQS_SIG_sign(_sigPtr, (IntPtr)sigPtr, ref signatureLength,
-                    (IntPtr)msgPtr, (UIntPtr)message.Length, (IntPtr)skPtr);
+                Common.OqsStatus result;
+                if (ctxStr != null)
+                {
+                    fixed (byte* ctxPtr = ctxStr)
+                    {
+                        result = Sig.OQS_SIG_sign_with_ctx_str(_sigPtr, (IntPtr)sigPtr, ref signatureLength,
+                            (IntPtr)msgPtr, (UIntPtr)message.Length, (IntPtr)ctxPtr, (UIntPtr)ctxStr.Length, (IntPtr)skPtr);
+                    }
+                }
+                else
+                {
+                    result = Sig.OQS_SIG_sign(_sigPtr, (IntPtr)sigPtr, ref signatureLength,
+                        (IntPtr)msgPtr, (UIntPtr)message.Length, (IntPtr)skPtr);
+                }
+
                 if (result != Common.OqsStatus.Success)
                 {
                     throw new OqsException("Failed to sign message");
@@ -325,7 +411,7 @@ public class SigInstance : IDisposable
     /// <summary>
     /// Verify a signature
     /// </summary>
-    public bool Verify(byte[] message, byte[] signature, byte[] publicKey)
+    public bool Verify(byte[] message, byte[] signature, byte[] publicKey, byte[]? ctxStr = null)
     {
         ThrowIfDisposed();
 
@@ -334,12 +420,29 @@ public class SigInstance : IDisposable
             throw new ArgumentException($"Public key must be {PublicKeyLength} bytes");
         }
 
+        if (ctxStr != null && !SupportsContextString)
+        {
+            throw new ArgumentException($"Algorithm {Algorithm} does not support context strings");
+        }
+
         unsafe
         {
             fixed (byte* msgPtr = message, sigPtr = signature, pkPtr = publicKey)
             {
-                var result = Sig.OQS_SIG_verify(_sigPtr, (IntPtr)msgPtr, (UIntPtr)message.Length,
-                    (IntPtr)sigPtr, (UIntPtr)signature.Length, (IntPtr)pkPtr);
+                Common.OqsStatus result;
+                if (ctxStr != null)
+                {
+                    fixed (byte* ctxPtr = ctxStr)
+                    {
+                        result = Sig.OQS_SIG_verify_with_ctx_str(_sigPtr, (IntPtr)msgPtr, (UIntPtr)message.Length,
+                            (IntPtr)sigPtr, (UIntPtr)signature.Length, (IntPtr)ctxPtr, (UIntPtr)ctxStr.Length, (IntPtr)pkPtr);
+                    }
+                }
+                else
+                {
+                    result = Sig.OQS_SIG_verify(_sigPtr, (IntPtr)msgPtr, (UIntPtr)message.Length,
+                        (IntPtr)sigPtr, (UIntPtr)signature.Length, (IntPtr)pkPtr);
+                }
                 return result == Common.OqsStatus.Success;
             }
         }

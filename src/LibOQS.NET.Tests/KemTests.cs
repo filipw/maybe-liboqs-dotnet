@@ -19,6 +19,12 @@ public class KemTests
     [InlineData(KemAlgorithm.Hqc128)]
     [InlineData(KemAlgorithm.Hqc192)]
     [InlineData(KemAlgorithm.Hqc256)]
+    [InlineData(KemAlgorithm.NtruHps2048509)]
+    [InlineData(KemAlgorithm.NtruHps2048677)]
+    [InlineData(KemAlgorithm.NtruHps4096821)]
+    [InlineData(KemAlgorithm.NtruHps40961229)]
+    [InlineData(KemAlgorithm.NtruHrss701)]
+    [InlineData(KemAlgorithm.NtruHrss1373)]
     [InlineData(KemAlgorithm.NtruPrimeSntrup761)]
     // [InlineData(KemAlgorithm.ClassicMcEliece348864)]
     // [InlineData(KemAlgorithm.ClassicMcEliece348864f)]
@@ -172,6 +178,7 @@ public class KemTests
     [InlineData(KemAlgorithm.Kyber512)]
     [InlineData(KemAlgorithm.BikeL1)]
     [InlineData(KemAlgorithm.Hqc128)]
+    [InlineData(KemAlgorithm.NtruHps2048509)]
     [InlineData(KemAlgorithm.NtruPrimeSntrup761)]
     // [InlineData(KemAlgorithm.ClassicMcEliece348864)]
     [InlineData(KemAlgorithm.FrodoKem640Aes)]
@@ -361,5 +368,36 @@ public class KemTests
 
         Assert.Equal(ssAes1, ssAes2);
         Assert.Equal(ssShake1, ssShake2);
+    }
+    [SkippableTheory]
+    [InlineData(KemAlgorithm.MlKem512)]
+    public void KemDerandomized_ShouldBeDeterministic(KemAlgorithm algorithm)
+    {
+        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
+        using var kem = new KemInstance(algorithm);
+        Skip.If(kem.KeypairSeedLength == 0, $"Algorithm {algorithm} does not support derandomized keypair.");
+
+        var seed = new byte[kem.KeypairSeedLength];
+        new Random(42).NextBytes(seed);
+
+        // Generate keypair twice with same seed
+        var (pk1, sk1) = kem.GenerateKeypair(seed);
+        var (pk2, sk2) = kem.GenerateKeypair(seed);
+
+        Assert.Equal(pk1, pk2);
+        Assert.Equal(sk1, sk2);
+
+        // Encapsulate twice with same seed
+        if (kem.EncapsSeedLength > 0)
+        {
+            var encapsSeed = new byte[kem.EncapsSeedLength];
+            new Random(123).NextBytes(encapsSeed);
+
+            var (ct1, ss1) = kem.Encapsulate(pk1, encapsSeed);
+            var (ct2, ss2) = kem.Encapsulate(pk1, encapsSeed);
+
+            Assert.Equal(ct1, ct2);
+            Assert.Equal(ss1, ss2);
+        }
     }
 }

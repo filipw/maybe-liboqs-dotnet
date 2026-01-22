@@ -259,9 +259,9 @@ public static class LibOqsDemo
 
             var secLevel = kemAlg switch
             {
-                KemAlgorithm.MlKem512 or KemAlgorithm.Kyber512 or KemAlgorithm.BikeL1 or KemAlgorithm.Hqc128 or KemAlgorithm.ClassicMcEliece348864 => "Level 1",
-                KemAlgorithm.MlKem768 or KemAlgorithm.Kyber768 or KemAlgorithm.BikeL3 or KemAlgorithm.Hqc192 or KemAlgorithm.NtruPrimeSntrup761 or KemAlgorithm.ClassicMcEliece460896 => "Level 3",
-                KemAlgorithm.MlKem1024 or KemAlgorithm.Kyber1024 or KemAlgorithm.BikeL5 or KemAlgorithm.Hqc256 or KemAlgorithm.ClassicMcEliece6688128 or KemAlgorithm.ClassicMcEliece6960119 or KemAlgorithm.ClassicMcEliece8192128 => "Level 5",
+                KemAlgorithm.MlKem512 or KemAlgorithm.Kyber512 or KemAlgorithm.BikeL1 or KemAlgorithm.Hqc128 or KemAlgorithm.ClassicMcEliece348864 or KemAlgorithm.NtruHps2048509 or KemAlgorithm.NtruHrss701 => "Level 1",
+                KemAlgorithm.MlKem768 or KemAlgorithm.Kyber768 or KemAlgorithm.BikeL3 or KemAlgorithm.Hqc192 or KemAlgorithm.NtruPrimeSntrup761 or KemAlgorithm.ClassicMcEliece460896 or KemAlgorithm.NtruHps2048677 => "Level 3",
+                KemAlgorithm.MlKem1024 or KemAlgorithm.Kyber1024 or KemAlgorithm.BikeL5 or KemAlgorithm.Hqc256 or KemAlgorithm.ClassicMcEliece6688128 or KemAlgorithm.ClassicMcEliece6960119 or KemAlgorithm.ClassicMcEliece8192128 or KemAlgorithm.NtruHps4096821 or KemAlgorithm.NtruHps40961229 or KemAlgorithm.NtruHrss1373 => "Level 5",
                 _ when kemAlg.ToString().Contains("640") => "Level 1",
                 _ when kemAlg.ToString().Contains("976") => "Level 3",
                 _ when kemAlg.ToString().Contains("1344") => "Level 5",
@@ -297,9 +297,9 @@ public static class LibOqsDemo
 
             var secLevel = sigAlg switch
             {
-                SigAlgorithm.MlDsa44 or SigAlgorithm.Dilithium2 or SigAlgorithm.Falcon512 or SigAlgorithm.FalconPadded512 => "Level 1",
-                SigAlgorithm.MlDsa65 or SigAlgorithm.Dilithium3 => "Level 3",
-                SigAlgorithm.MlDsa87 or SigAlgorithm.Dilithium5 or SigAlgorithm.Falcon1024 or SigAlgorithm.FalconPadded1024 => "Level 5",
+                SigAlgorithm.MlDsa44 or SigAlgorithm.Falcon512 or SigAlgorithm.FalconPadded512 or SigAlgorithm.SlhDsaSha2128sPure or SigAlgorithm.SlhDsaSha2128fPure or SigAlgorithm.SlhDsaShake128sPure or SigAlgorithm.SlhDsaShake128fPure => "Level 1",
+                SigAlgorithm.MlDsa65 or SigAlgorithm.SlhDsaSha2192sPure or SigAlgorithm.SlhDsaSha2192fPure or SigAlgorithm.SlhDsaShake192sPure or SigAlgorithm.SlhDsaShake192fPure => "Level 3",
+                SigAlgorithm.MlDsa87 or SigAlgorithm.Falcon1024 or SigAlgorithm.FalconPadded1024 or SigAlgorithm.SlhDsaSha2256sPure or SigAlgorithm.SlhDsaSha2256fPure or SigAlgorithm.SlhDsaShake256sPure or SigAlgorithm.SlhDsaShake256fPure => "Level 5",
                 _ when sigAlg.ToString().Contains("128") => "Level 1",
                 _ when sigAlg.ToString().Contains("192") => "Level 3",
                 _ when sigAlg.ToString().Contains("256") => "Level 5",

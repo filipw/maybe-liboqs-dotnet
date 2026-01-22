@@ -21,7 +21,11 @@ public static class Kem
         public UIntPtr length_secret_key;
         public UIntPtr length_ciphertext;
         public UIntPtr length_shared_secret;
+        public UIntPtr length_keypair_seed;
+        public UIntPtr length_encaps_seed;
+        public IntPtr keypair_derand_function;
         public IntPtr keypair_function;
+        public IntPtr encaps_derand_function;
         public IntPtr encaps_function;
         public IntPtr decaps_function;
     }
@@ -45,10 +49,22 @@ public static class Kem
     public static extern Common.OqsStatus OQS_KEM_keypair(IntPtr kem, IntPtr public_key, IntPtr secret_key);
 
     /// <summary>
+    /// Generate a keypair with a seed (derandomized)
+    /// </summary>
+    [DllImport(Common.LibraryName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_KEM_keypair_derand(IntPtr kem, IntPtr public_key, IntPtr secret_key, IntPtr seed);
+
+    /// <summary>
     /// Encapsulate
     /// </summary>
     [DllImport(Common.LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern Common.OqsStatus OQS_KEM_encaps(IntPtr kem, IntPtr ciphertext, IntPtr shared_secret, IntPtr public_key);
+
+    /// <summary>
+    /// Encapsulate with a seed (derandomized)
+    /// </summary>
+    [DllImport(Common.LibraryName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_KEM_encaps_derand(IntPtr kem, IntPtr ciphertext, IntPtr shared_secret, IntPtr public_key, IntPtr seed);
 
     /// <summary>
     /// Decapsulate
@@ -87,6 +103,12 @@ public static class Kem
     public static readonly string OQS_KEM_alg_hqc_128 = "HQC-128";
     public static readonly string OQS_KEM_alg_hqc_192 = "HQC-192";
     public static readonly string OQS_KEM_alg_hqc_256 = "HQC-256";
+    public static readonly string OQS_KEM_alg_ntru_hps2048509 = "NTRU-HPS-2048-509";
+    public static readonly string OQS_KEM_alg_ntru_hps2048677 = "NTRU-HPS-2048-677";
+    public static readonly string OQS_KEM_alg_ntru_hps4096821 = "NTRU-HPS-4096-821";
+    public static readonly string OQS_KEM_alg_ntru_hps40961229 = "NTRU-HPS-4096-1229";
+    public static readonly string OQS_KEM_alg_ntru_hrss701 = "NTRU-HRSS-701";
+    public static readonly string OQS_KEM_alg_ntru_hrss1373 = "NTRU-HRSS-1373";
     public static readonly string OQS_KEM_alg_ntruprime_sntrup761 = "sntrup761";
     public static readonly string OQS_KEM_alg_classic_mceliece_348864 = "Classic-McEliece-348864";
     public static readonly string OQS_KEM_alg_classic_mceliece_348864f = "Classic-McEliece-348864f";

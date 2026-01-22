@@ -10,9 +10,6 @@ public class SigTests
     [InlineData(SigAlgorithm.MlDsa44)]
     [InlineData(SigAlgorithm.MlDsa65)]
     [InlineData(SigAlgorithm.MlDsa87)]
-    [InlineData(SigAlgorithm.Dilithium2)]
-    [InlineData(SigAlgorithm.Dilithium3)]
-    [InlineData(SigAlgorithm.Dilithium5)]
     [InlineData(SigAlgorithm.Falcon512)]
     [InlineData(SigAlgorithm.Falcon1024)]
     [InlineData(SigAlgorithm.FalconPadded512)]
@@ -63,6 +60,12 @@ public class SigTests
     [InlineData(SigAlgorithm.UovOvIpPkcSkc)]
     [InlineData(SigAlgorithm.UovOvIiiPkcSkc)]
     [InlineData(SigAlgorithm.UovOvVPkcSkc)]
+    [InlineData(SigAlgorithm.SlhDsaSha2128sPure)]
+    [InlineData(SigAlgorithm.SlhDsaSha2128fPure)]
+    [InlineData(SigAlgorithm.SlhDsaShake128sPure)]
+    [InlineData(SigAlgorithm.SlhDsaShake128fPure)]
+    [InlineData(SigAlgorithm.Snova24_5_4)]
+    [InlineData(SigAlgorithm.Snova24_5_4_Shake)]
     public void SigSignVerify_ShouldSucceed(SigAlgorithm algorithm)
     {
         Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
@@ -144,38 +147,24 @@ public class SigTests
     }
 
     [SkippableTheory]
-    [InlineData(SigAlgorithm.Dilithium2)]
-    [InlineData(SigAlgorithm.Dilithium3)]
-    [InlineData(SigAlgorithm.Dilithium5)]
-    public void DilithiumSignVerify_ShouldSucceed(SigAlgorithm algorithm)
+    [InlineData(SigAlgorithm.MlDsa44)]
+    [InlineData(SigAlgorithm.SlhDsaSha2128sPure)]
+    public void SigSignVerify_WithContextString_ShouldSucceed(SigAlgorithm algorithm)
     {
         Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
         using var sig = new SigInstance(algorithm);
+        Skip.If(!sig.SupportsContextString, $"Algorithm {algorithm} does not support context strings.");
 
-        // Generate keypair
         var (publicKey, secretKey) = sig.GenerateKeypair();
+        var message = "Hello with context!"u8.ToArray();
+        var ctxStr = "TestContext"u8.ToArray();
 
-        Assert.Equal(sig.PublicKeyLength, publicKey.Length);
-        Assert.Equal(sig.SecretKeyLength, secretKey.Length);
+        var signature = sig.Sign(message, secretKey, ctxStr);
+        Assert.True(sig.Verify(message, signature, publicKey, ctxStr));
 
-        // Test with various message sizes
-        var testMessages = new[]
-        {
-            Array.Empty<byte>(),
-            "Small message"u8.ToArray(),
-            new byte[1024], // Medium message
-            new byte[10000] // Large message
-        };
-
-        foreach (var message in testMessages)
-        {
-            var signature = sig.Sign(message, secretKey);
-            Assert.True(signature.Length > 0);
-            Assert.True(signature.Length <= sig.MaxSignatureLength);
-
-            var isValid = sig.Verify(message, signature, publicKey);
-            Assert.True(isValid);
-        }
+        // Verify with different context string should fail
+        var wrongCtxStr = "WrongContext"u8.ToArray();
+        Assert.False(sig.Verify(message, signature, publicKey, wrongCtxStr));
     }
 
     [SkippableTheory]
@@ -223,7 +212,6 @@ public class SigTests
 
     [SkippableTheory]
     [InlineData(SigAlgorithm.MlDsa44)]
-    [InlineData(SigAlgorithm.Dilithium2)]
     [InlineData(SigAlgorithm.Falcon512)]
     [InlineData(SigAlgorithm.FalconPadded512)]
     [InlineData(SigAlgorithm.SphincsPlusSha2128fSimple)]
@@ -279,7 +267,7 @@ public class SigTests
 
     [SkippableTheory]
     [InlineData(SigAlgorithm.MlDsa44)]
-    [InlineData(SigAlgorithm.Dilithium2)]
+    [InlineData(SigAlgorithm.MlDsa65)]
     public void SigLargeMessage_ShouldWork(SigAlgorithm algorithm)
     {
         Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
@@ -413,13 +401,13 @@ public class SigTests
     public void SigMultipleInstances_ShouldWorkIndependently()
     {
         using var sig1 = new SigInstance(SigAlgorithm.MlDsa44);
-        using var sig2 = new SigInstance(SigAlgorithm.Dilithium2);
+        using var sig2 = new SigInstance(SigAlgorithm.Falcon512);
 
         var (pk1, sk1) = sig1.GenerateKeypair();
         var (pk2, sk2) = sig2.GenerateKeypair();
 
         var message1 = "Message for MlDsa44"u8.ToArray();
-        var message2 = "Message for Dilithium2"u8.ToArray();
+        var message2 = "Message for Falcon512"u8.ToArray();
 
         var signature1 = sig1.Sign(message1, sk1);
         var signature2 = sig2.Sign(message2, sk2);
