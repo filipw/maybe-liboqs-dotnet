@@ -290,6 +290,10 @@ LibOQS.NET supports the following platforms out of the box with no additional se
 - **Linux ARM64**
 - **macOS ARM64**
 
+> [!NOTE]
+> **Platform Limitations**: 
+> - **Windows**: `SLH-DSA` (Pure variants) are currently disabled due to a known bug in `liboqs` 0.15.0 that causes verification failures on Windows. `BIKE` is also disabled on Windows.
+
 The NuGet packages include all necessary native libraries for these platforms.
 
 ## Troubleshooting
