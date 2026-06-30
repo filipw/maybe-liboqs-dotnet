@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Algorithm reference: Maybe LibOQS.NET</title>
+  <meta name="description" content="The full set of post-quantum key encapsulation mechanisms and digital signature schemes exposed by Maybe LibOQS.NET, with parameter sets and claimed security levels.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <a class="site-header__brand" href="index.html" aria-label="Maybe LibOQS.NET, home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#fff1e5" stroke-width="1.4" stroke-linecap="round">
+            <path d="M5 5h14M5 12h14M5 19h14M5 5v14M12 5v14M19 5v14" opacity="0.55"/>
+          </g>
+          <circle cx="5" cy="5" r="1.6" fill="#fff1e5"/>
+          <circle cx="19" cy="19" r="1.6" fill="#fff1e5"/>
+          <circle cx="12" cy="12" r="2.4" fill="#e0506f"/>
+        </svg>
+      </span>
+      <span class="brand-word">
+        <span class="brand-word__kicker">Maybe</span>
+        <span class="brand-word__name">LibOQS<span class="brand-word__dot">.NET</span></span>
+      </span>
+    </a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+    <nav class="site-nav" id="primary-nav" aria-label="Primary">
+      <a href="index.html#overview">Overview</a>
+      <a href="index.html#getting-started">Getting started</a>
+      <a href="index.html#demonstrations">Demonstrations</a>
+      <a href="index.html#benchmarks">Benchmarks</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/filipw/maybe-liboqs-dotnet">Source</a>
+    </nav>
+  </header>
+
+  <div class="shell">
+
+    <aside class="toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <nav>
+        <ol>
+          <li><a href="#intro">About this reference</a></li>
+          <li><a href="#kems">Key encapsulation</a></li>
+          <li><a href="#ml-kem">ML-KEM and Kyber</a></li>
+          <li><a href="#code-kem">Code-based</a></li>
+          <li><a href="#ntru">NTRU families</a></li>
+          <li><a href="#frodo">FrodoKEM</a></li>
+          <li><a href="#sigs">Digital signatures</a></li>
+          <li><a href="#lattice-sig">Lattice signatures</a></li>
+          <li><a href="#hash-sig">Hash-based</a></li>
+          <li><a href="#mv-sig">Multivariate and code-based</a></li>
+          <li><a href="#levels">Security levels</a></li>
+        </ol>
+      </nav>
+    </aside>
+
+    <main>
+
+      <div class="masthead">
+        <p class="masthead__kicker">Reference</p>
+        <h1>Algorithm reference</h1>
+        <p class="masthead__standfirst">
+          The parameter sets exposed through the <code>KemAlgorithm</code> and
+          <code>SigAlgorithm</code> enumerations, grouped by family, with the security level
+          claimed for each.
+        </p>
+        <div class="masthead__meta">
+          <span><strong>Source</strong> liboqs 0.16.0-rc1</span>
+          <span><a href="index.html">Return to the overview</a></span>
+        </div>
+      </div>
+
+      <section id="intro">
+        <span class="section-number">Reference</span>
+        <h2>About this reference</h2>
+        <p>
+          Each entry below corresponds to a value on one of the two algorithm enumerations in the
+          library. Availability depends on the build of liboqs that the package carries and on the
+          platform, as noted on the overview page, so an entry that appears here may report as
+          disabled at runtime. The <code>IsEnabled()</code> method on each enumeration value is
+          the reliable way to check before use.
+        </p>
+        <p>
+          Security levels follow the categories defined by NIST for the standardisation process.
+          They are summarised at the foot of this page.
+        </p>
+      </section>
+
+      <section id="kems">
+        <span class="section-number">Part 1</span>
+        <h2>Key encapsulation mechanisms</h2>
+        <p>
+          A key encapsulation mechanism lets two parties derive a shared secret. The families
+          below differ in the hard problem they rest on, which in turn affects key and ciphertext
+          sizes and performance.
+        </p>
+      </section>
+
+      <section id="ml-kem">
+        <span class="section-number">1.1</span>
+        <h2>ML-KEM and Kyber</h2>
+        <p>
+          ML-KEM is the NIST standard derived from CRYSTALS-Kyber, and Kyber is the earlier
+          submission from which it was developed. Both are lattice-based.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Parameter set</th><th scope="col">Family</th><th scope="col">Security level</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">ML-KEM-512</th><td>ML-KEM (standardised)</td><td>Level 1</td></tr>
+              <tr><th scope="row">ML-KEM-768</th><td>ML-KEM (standardised)</td><td>Level 3</td></tr>
+              <tr><th scope="row">ML-KEM-1024</th><td>ML-KEM (standardised)</td><td>Level 5</td></tr>
+              <tr><th scope="row">Kyber512</th><td>Kyber</td><td>Level 1</td></tr>
+              <tr><th scope="row">Kyber768</th><td>Kyber</td><td>Level 3</td></tr>
+              <tr><th scope="row">Kyber1024</th><td>Kyber</td><td>Level 5</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="code-kem">
+        <span class="section-number">1.2</span>
+        <h2>Code-based mechanisms</h2>
+        <p>
+          BIKE, HQC and Classic McEliece rest on the hardness of decoding problems in
+          error-correcting codes. Classic McEliece has very large public keys but a long history
+          of analysis; the fast variants are denoted with a trailing letter f.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Parameter set</th><th scope="col">Family</th><th scope="col">Security level</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">BIKE-L1</th><td>BIKE</td><td>Level 1</td></tr>
+              <tr><th scope="row">BIKE-L3</th><td>BIKE</td><td>Level 3</td></tr>
+              <tr><th scope="row">BIKE-L5</th><td>BIKE</td><td>Level 5</td></tr>
+              <tr><th scope="row">HQC-1</th><td>HQC</td><td>Level 1</td></tr>
+              <tr><th scope="row">HQC-3</th><td>HQC</td><td>Level 3</td></tr>
+              <tr><th scope="row">HQC-5</th><td>HQC</td><td>Level 5</td></tr>
+              <tr><th scope="row">Classic-McEliece-348864</th><td>Classic McEliece</td><td>Level 1</td></tr>
+              <tr><th scope="row">Classic-McEliece-348864f</th><td>Classic McEliece, fast</td><td>Level 1</td></tr>
+              <tr><th scope="row">Classic-McEliece-460896</th><td>Classic McEliece</td><td>Level 3</td></tr>
+              <tr><th scope="row">Classic-McEliece-460896f</th><td>Classic McEliece, fast</td><td>Level 3</td></tr>
+              <tr><th scope="row">Classic-McEliece-6688128</th><td>Classic McEliece</td><td>Level 5</td></tr>
+              <tr><th scope="row">Classic-McEliece-6688128f</th><td>Classic McEliece, fast</td><td>Level 5</td></tr>
+              <tr><th scope="row">Classic-McEliece-6960119</th><td>Classic McEliece</td><td>Level 5</td></tr>
+              <tr><th scope="row">Classic-McEliece-6960119f</th><td>Classic McEliece, fast</td><td>Level 5</td></tr>
+              <tr><th scope="row">Classic-McEliece-8192128</th><td>Classic McEliece</td><td>Level 5</td></tr>
+              <tr><th scope="row">Classic-McEliece-8192128f</th><td>Classic McEliece, fast</td><td>Level 5</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="ntru">
+        <span class="section-number">1.3</span>
+        <h2>NTRU and NTRU Prime</h2>
+        <p>
+          The NTRU family is lattice-based and among the longest-studied of these constructions.
+          The HPS and HRSS variants differ in how parameters are chosen; sntrup761 belongs to the
+          NTRU Prime line.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Parameter set</th><th scope="col">Family</th><th scope="col">Security level</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">NTRU-HPS-2048-509</th><td>NTRU HPS</td><td>Level 1</td></tr>
+              <tr><th scope="row">NTRU-HPS-2048-677</th><td>NTRU HPS</td><td>Level 3</td></tr>
+              <tr><th scope="row">NTRU-HPS-4096-821</th><td>NTRU HPS</td><td>Level 5</td></tr>
+              <tr><th scope="row">NTRU-HPS-4096-1229</th><td>NTRU HPS</td><td>Level 5</td></tr>
+              <tr><th scope="row">NTRU-HRSS-701</th><td>NTRU HRSS</td><td>Level 1</td></tr>
+              <tr><th scope="row">NTRU-HRSS-1373</th><td>NTRU HRSS</td><td>Level 5</td></tr>
+              <tr><th scope="row">sntrup761</th><td>NTRU Prime</td><td>Level 3</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="frodo">
+        <span class="section-number">1.4</span>
+        <h2>FrodoKEM</h2>
+        <p>
+          FrodoKEM is a conservative lattice scheme built on plain learning-with-errors, without
+          the ring structure that the Kyber and NTRU families use. Each parameter set is offered
+          with an AES or a SHAKE matrix generator. The library exposes both the standard salted
+          form and the ephemeral eFrodoKEM form intended for single-use key pairs.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Parameter set</th><th scope="col">Form</th><th scope="col">Security level</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">FrodoKEM-640-AES</th><td>Standard, salted</td><td>Level 1</td></tr>
+              <tr><th scope="row">FrodoKEM-640-SHAKE</th><td>Standard, salted</td><td>Level 1</td></tr>
+              <tr><th scope="row">FrodoKEM-976-AES</th><td>Standard, salted</td><td>Level 3</td></tr>
+              <tr><th scope="row">FrodoKEM-976-SHAKE</th><td>Standard, salted</td><td>Level 3</td></tr>
+              <tr><th scope="row">FrodoKEM-1344-AES</th><td>Standard, salted</td><td>Level 5</td></tr>
+              <tr><th scope="row">FrodoKEM-1344-SHAKE</th><td>Standard, salted</td><td>Level 5</td></tr>
+              <tr><th scope="row">eFrodoKEM-640-AES</th><td>Ephemeral</td><td>Level 1</td></tr>
+              <tr><th scope="row">eFrodoKEM-640-SHAKE</th><td>Ephemeral</td><td>Level 1</td></tr>
+              <tr><th scope="row">eFrodoKEM-976-AES</th><td>Ephemeral</td><td>Level 3</td></tr>
+              <tr><th scope="row">eFrodoKEM-976-SHAKE</th><td>Ephemeral</td><td>Level 3</td></tr>
+              <tr><th scope="row">eFrodoKEM-1344-AES</th><td>Ephemeral</td><td>Level 5</td></tr>
+              <tr><th scope="row">eFrodoKEM-1344-SHAKE</th><td>Ephemeral</td><td>Level 5</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sigs">
+        <span class="section-number">Part 2</span>
+        <h2>Digital signature schemes</h2>
+        <p>
+          A signature scheme allows a private key holder to produce a value over a message that
+          anyone with the public key can verify. As with the mechanisms above, the families differ
+          in the assumption they rely on and in the trade-off between key size, signature size and
+          speed.
+        </p>
+      </section>
+
+      <section id="lattice-sig">
+        <span class="section-number">2.1</span>
+        <h2>Lattice signatures</h2>
+        <p>
+          ML-DSA is the NIST standard derived from CRYSTALS-Dilithium. Falcon is a second
+          lattice-based standard, with smaller signatures but a more intricate implementation; its
+          padded variants produce signatures of a fixed length.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Parameter set</th><th scope="col">Family</th><th scope="col">Security level</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">ML-DSA-44</th><td>ML-DSA (standardised)</td><td>Level 1</td></tr>
+              <tr><th scope="row">ML-DSA-65</th><td>ML-DSA (standardised)</td><td>Level 3</td></tr>
+              <tr><th scope="row">ML-DSA-87</th><td>ML-DSA (standardised)</td><td>Level 5</td></tr>
+              <tr><th scope="row">Falcon-512</th><td>Falcon</td><td>Level 1</td></tr>
+              <tr><th scope="row">Falcon-1024</th><td>Falcon</td><td>Level 5</td></tr>
+              <tr><th scope="row">Falcon-padded-512</th><td>Falcon, padded</td><td>Level 1</td></tr>
+              <tr><th scope="row">Falcon-padded-1024</th><td>Falcon, padded</td><td>Level 5</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="hash-sig">
+        <span class="section-number">2.2</span>
+        <h2>Hash-based signatures</h2>
+        <p>
+          SLH-DSA is the NIST standard derived from SPHINCS+. Its security rests only on the
+          properties of a hash function, which makes it conservative, at the cost of larger
+          signatures. Each parameter set selects a hash family, SHA-2 or SHAKE, a security level,
+          and a small or fast trade-off, denoted s and f.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Parameter set</th><th scope="col">Hash family</th><th scope="col">Security level</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">SLH-DSA-SHA2-128s</th><td>SHA-2, small</td><td>Level 1</td></tr>
+              <tr><th scope="row">SLH-DSA-SHA2-128f</th><td>SHA-2, fast</td><td>Level 1</td></tr>
+              <tr><th scope="row">SLH-DSA-SHAKE-128s</th><td>SHAKE, small</td><td>Level 1</td></tr>
+              <tr><th scope="row">SLH-DSA-SHAKE-128f</th><td>SHAKE, fast</td><td>Level 1</td></tr>
+              <tr><th scope="row">SLH-DSA-SHA2-192s</th><td>SHA-2, small</td><td>Level 3</td></tr>
+              <tr><th scope="row">SLH-DSA-SHA2-192f</th><td>SHA-2, fast</td><td>Level 3</td></tr>
+              <tr><th scope="row">SLH-DSA-SHAKE-192s</th><td>SHAKE, small</td><td>Level 3</td></tr>
+              <tr><th scope="row">SLH-DSA-SHAKE-192f</th><td>SHAKE, fast</td><td>Level 3</td></tr>
+              <tr><th scope="row">SLH-DSA-SHA2-256s</th><td>SHA-2, small</td><td>Level 5</td></tr>
+              <tr><th scope="row">SLH-DSA-SHA2-256f</th><td>SHA-2, fast</td><td>Level 5</td></tr>
+              <tr><th scope="row">SLH-DSA-SHAKE-256s</th><td>SHAKE, small</td><td>Level 5</td></tr>
+              <tr><th scope="row">SLH-DSA-SHAKE-256f</th><td>SHAKE, fast</td><td>Level 5</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">
+          The pure SLH-DSA variants are disabled on Windows in the bundled liboqs 0.16.0-rc1
+          release, as noted on the overview page. They are available on Linux and macOS.
+        </div>
+      </section>
+
+      <section id="mv-sig">
+        <span class="section-number">2.3</span>
+        <h2>Multivariate and code-based signatures</h2>
+        <p>
+          These families are more recent candidates drawn from the additional signature round of
+          the standardisation effort. They are included for evaluation and comparison. Each is
+          offered across several parameter sets and trade-offs; the table records the variants the
+          library exposes.
+        </p>
+
+        <h3>MAYO</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Parameter set</th><th scope="col">Security level</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">MAYO-1</th><td>Level 1</td></tr>
+              <tr><th scope="row">MAYO-2</th><td>Level 1</td></tr>
+              <tr><th scope="row">MAYO-3</th><td>Level 3</td></tr>
+              <tr><th scope="row">MAYO-5</th><td>Level 5</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>CROSS</h3>
+        <p>
+          CROSS is offered in two problem variants, RSDP and RSDPG, each at three security levels
+          and in balanced, fast and small trade-offs, for eighteen parameter sets in total.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Variant</th><th scope="col">Trade-offs</th><th scope="col">Security levels</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">CROSS-RSDP</th><td>Balanced, fast, small</td><td>Levels 1, 3 and 5</td></tr>
+              <tr><th scope="row">CROSS-RSDPG</th><td>Balanced, fast, small</td><td>Levels 1, 3 and 5</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>UOV</h3>
+        <p>
+          The Unbalanced Oil and Vinegar scheme is exposed across its Ip, Is, III and V parameter
+          sets, each in a standard form and in pkc and skc compressed-key forms, for twelve
+          parameter sets in total.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Parameter set</th><th scope="col">Key forms</th><th scope="col">Security level</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">OV-Is</th><td>Standard, pkc, skc</td><td>Level 1</td></tr>
+              <tr><th scope="row">OV-Ip</th><td>Standard, pkc, skc</td><td>Level 1</td></tr>
+              <tr><th scope="row">OV-III</th><td>Standard, pkc, skc</td><td>Level 3</td></tr>
+              <tr><th scope="row">OV-V</th><td>Standard, pkc, skc</td><td>Level 5</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>SNOVA and MQOM</h3>
+        <p>
+          SNOVA is exposed across twelve parameter sets spanning the three security levels. MQOM
+          is exposed across twelve parameter sets, in GF(16) fast and short trade-offs at each
+          level. As noted on the overview page, the MQOM family is disabled on Windows in the
+          bundled release and is available on Linux and macOS.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Family</th><th scope="col">Parameter sets</th><th scope="col">Security levels</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">SNOVA</th><td>12 variants</td><td>Levels 1, 3 and 5</td></tr>
+              <tr><th scope="row">MQOM</th><td>12 variants, GF(16) fast and short</td><td>Levels 1, 3 and 5</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="levels">
+        <span class="section-number">Notes</span>
+        <h2>Security levels</h2>
+        <p>
+          The levels referred to throughout this page are the categories NIST defined for the
+          standardisation process. They express the computational effort an attack is expected to
+          require, relative to well-understood symmetric primitives.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col">Level</th><th scope="col">Comparable effort</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Level 1</th><td>At least as hard as a key search on AES-128</td></tr>
+              <tr><th scope="row">Level 3</th><td>At least as hard as a key search on AES-192</td></tr>
+              <tr><th scope="row">Level 5</th><td>At least as hard as a key search on AES-256</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="index.html">Return to the overview</a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <div>
+        <h3>Maybe LibOQS.NET</h3>
+        <p style="max-width: 24rem;">
+          A .NET binding for the Open Quantum Safe liboqs library, distributed with the native
+          dependencies bundled. An independent, unaffiliated project.
+        </p>
+      </div>
+      <div>
+        <h3>This project</h3>
+        <ul>
+          <li><a href="https://github.com/filipw/maybe-liboqs-dotnet">Source repository</a></li>
+          <li><a href="index.html">Overview</a></li>
+          <li><a href="index.html#getting-started">Getting started</a></li>
+          <li><a href="index.html#benchmarks">Benchmarks</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Upstream and background</h3>
+        <ul>
+          <li><a href="https://openquantumsafe.org/">Open Quantum Safe</a></li>
+          <li><a href="https://github.com/open-quantum-safe/liboqs">liboqs library</a></li>
+          <li><a href="https://csrc.nist.gov/projects/post-quantum-cryptography">NIST PQC project</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__colophon">
+      <p>
+        Maybe LibOQS.NET is licensed under the MIT licence. liboqs is distributed under its own
+        licence. This site is not affiliated with the Open Quantum Safe project.
+      </p>
+      <p>Set in the system serif typeface. No external resources are loaded.</p>
+    </div>
+  </footer>
+
+  <script src="assets/highlight.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+</html>

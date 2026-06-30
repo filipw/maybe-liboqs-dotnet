@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maybe LibOQS.NET: post-quantum cryptography for .NET</title>
+  <meta name="description" content="Maybe LibOQS.NET provides .NET bindings for liboqs, the Open Quantum Safe C library of quantum-resistant key encapsulation mechanisms and digital signatures. An unaffiliated wrapper that bundles liboqs.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <a class="site-header__brand" href="index.html" aria-label="Maybe LibOQS.NET, home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#fff1e5" stroke-width="1.4" stroke-linecap="round">
+            <path d="M5 5h14M5 12h14M5 19h14M5 5v14M12 5v14M19 5v14" opacity="0.55"/>
+          </g>
+          <circle cx="5" cy="5" r="1.6" fill="#fff1e5"/>
+          <circle cx="19" cy="19" r="1.6" fill="#fff1e5"/>
+          <circle cx="12" cy="12" r="2.4" fill="#e0506f"/>
+        </svg>
+      </span>
+      <span class="brand-word">
+        <span class="brand-word__kicker">Maybe</span>
+        <span class="brand-word__name">LibOQS<span class="brand-word__dot">.NET</span></span>
+      </span>
+    </a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+    <nav class="site-nav" id="primary-nav" aria-label="Primary">
+      <a href="#overview">Overview</a>
+      <a href="#getting-started">Getting started</a>
+      <a href="#demonstrations">Demonstrations</a>
+      <a href="#approaches">Approaches</a>
+      <a href="#benchmarks">Benchmarks</a>
+      <a href="algorithms.html">Algorithms</a>
+      <a href="https://github.com/filipw/maybe-liboqs-dotnet">Source</a>
+    </nav>
+  </header>
+
+  <div class="shell">
+
+    <aside class="toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <nav>
+        <ol>
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#background">Post-quantum cryptography</a></li>
+          <li><a href="#getting-started">Getting started</a></li>
+          <li><a href="#demonstrations">Demonstrations</a></li>
+          <li><a href="#kem">Key encapsulation</a></li>
+          <li><a href="#signatures">Digital signatures</a></li>
+          <li><a href="#key-exchange">Signed key exchange</a></li>
+          <li><a href="#approaches">Three approaches</a></li>
+          <li><a href="#benchmarks">Benchmarks</a></li>
+          <li><a href="#algorithms">Supported algorithms</a></li>
+          <li><a href="#platforms">Platform support</a></li>
+          <li><a href="#memory">Resource management</a></li>
+          <li><a href="#acknowledgements">Acknowledgements</a></li>
+        </ol>
+      </nav>
+    </aside>
+
+    <main>
+
+      <div class="masthead">
+        <p class="masthead__kicker">A .NET wrapper for liboqs</p>
+        <h1>Post-quantum cryptography, available from .NET</h1>
+        <p class="masthead__standfirst">
+          Maybe LibOQS.NET exposes the quantum-resistant key encapsulation mechanisms and
+          digital signature schemes implemented by liboqs to .NET applications, with the
+          native library bundled so that no separate compilation step is required.
+        </p>
+        <div class="masthead__meta">
+          <span><strong>Wraps</strong> liboqs 0.16.0-rc1</span>
+          <span><strong>Runtime</strong> .NET 9.0 or later</span>
+          <span><strong>Licence</strong> MIT</span>
+          <span><strong>Platforms</strong> Windows, Linux, macOS</span>
+        </div>
+      </div>
+
+      <div class="credit">
+        <p>
+          This is an independent project. It is <strong>not affiliated with, nor endorsed by,
+          the Open Quantum Safe project</strong>. It packages and links against
+          <a href="https://github.com/open-quantum-safe/liboqs">liboqs</a>, which performs all of
+          the underlying cryptographic work and is distributed under its own licence. The
+          acknowledgements section below records this dependency in full.
+        </p>
+      </div>
+
+      <section id="overview" class="has-dropcap">
+        <span class="section-number">Section 1</span>
+        <h2>Overview</h2>
+        <p>
+          Maybe LibOQS.NET is a binding layer. It does not implement cryptography itself.
+          Instead it forwards calls to <a href="https://openquantumsafe.org/">liboqs</a>, the C
+          library maintained by the Open Quantum Safe project, and presents the results through
+          an idiomatic .NET surface. The intent is to make the algorithms that are currently
+          being standardised by NIST reachable from C# without obliging the caller to build a
+          native toolchain.
+        </p>
+        <p>
+          The project ships as two packages. <code>LibOQS.NET.Native</code> contains the
+          low-level P/Invoke declarations and the platform-specific native binaries.
+          <code>LibOQS.NET</code> builds on top of it and offers a typed API with enumerations
+          for the algorithms and disposable handles for the underlying native state. Both
+          packages carry the native dependencies for every supported platform, so adding a
+          package reference is sufficient.
+        </p>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat__figure">2</div>
+            <div class="stat__label">Primitives: key encapsulation and signatures</div>
+          </div>
+          <div class="stat">
+            <div class="stat__figure">5</div>
+            <div class="stat__label">Supported runtime targets</div>
+          </div>
+          <div class="stat">
+            <div class="stat__figure">90+</div>
+            <div class="stat__label">Algorithm parameter sets exposed</div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <a class="btn btn--primary" href="#getting-started">Read the getting-started guide</a>
+          <a class="btn btn--ghost" href="https://github.com/filipw/maybe-liboqs-dotnet">View the repository</a>
+        </div>
+      </section>
+
+      <section id="background">
+        <span class="section-number">Section 2</span>
+        <h2>Why post-quantum cryptography</h2>
+        <p>
+          The public-key cryptography in widespread use today, including RSA and elliptic-curve
+          schemes, rests on mathematical problems that a sufficiently large quantum computer
+          could solve efficiently using Shor's algorithm. No such machine exists at present, but
+          encrypted material that is recorded now could be retained and decrypted later. This
+          prospect motivates a transition to schemes whose security is believed to hold against
+          quantum as well as classical adversaries.
+        </p>
+        <p>
+          Two families of primitive cover most needs. A <strong>key encapsulation mechanism</strong>
+          allows two parties to agree on a shared secret over an insecure channel: one party
+          publishes a public key, the other uses it to produce a ciphertext and a secret, and the
+          first party recovers the same secret from the ciphertext. A <strong>digital signature
+          scheme</strong> lets a holder of a private key produce a signature over a message that
+          anyone holding the corresponding public key can verify, and that cannot be forged
+          without the private key.
+        </p>
+        <p>
+          In 2024 NIST published the first finalised standards in this area: ML-KEM for key
+          encapsulation, derived from CRYSTALS-Kyber, and ML-DSA and SLH-DSA for signatures,
+          derived from CRYSTALS-Dilithium and SPHINCS+ respectively. liboqs implements these
+          alongside a wider set of candidates from the ongoing standardisation effort, and Maybe
+          LibOQS.NET makes that set available to .NET callers.
+        </p>
+        <div class="aside">
+          <p>
+            <strong>Terminology.</strong> Throughout this site, the name printed for an algorithm
+            is the identifier used by liboqs, for example <code>ML-KEM-768</code> or
+            <code>ML-DSA-65</code>. The numeric suffix indicates the parameter set, which fixes
+            the key sizes and the claimed security level.
+          </p>
+        </div>
+      </section>
+
+      <section id="getting-started">
+        <span class="section-number">Section 3</span>
+        <h2>Getting started</h2>
+        <p>
+          Add a reference to the high-level package. Nothing else is required: the native
+          libraries for each supported platform travel with the package, and the library
+          initialises itself on first use.
+        </p>
+
+        <div class="codeblock">
+          <div class="codeblock__bar"><span>Project file</span><button class="codeblock__copy" data-label="Copy">Copy</button></div>
+          <pre><code class="language-xml">&lt;PackageReference Include="LibOQS.NET" Version="..." /&gt;</code></pre>
+        </div>
+
+        <p>Or from the command line:</p>
+
+        <div class="codeblock">
+          <div class="codeblock__bar"><span>Shell</span><button class="codeblock__copy" data-label="Copy">Copy</button></div>
+          <pre><code class="language-bash">dotnet add package LibOQS.NET</code></pre>
+        </div>
+
+        <p>
+          The following program exercises both primitives. It encapsulates and recovers a shared
+          secret with ML-KEM-512, then signs and verifies a message with ML-DSA-44. The
+          <code>using</code> declarations ensure that the native handles are released when each
+          instance leaves scope.
+        </p>
+
+        <div class="codeblock">
+          <div class="codeblock__bar"><span>C#</span><button class="codeblock__copy" data-label="Copy">Copy</button></div>
+          <pre><code class="language-csharp">using LibOQS.NET;
+
+// The library initialises automatically; no explicit Initialize() call is needed.
+
+// Key encapsulation with ML-KEM-512
+using var kem = new KemInstance(KemAlgorithm.MlKem512);
+var (publicKey, secretKey) = kem.GenerateKeypair();
+var (ciphertext, sharedSecret1) = kem.Encapsulate(publicKey);
+var sharedSecret2 = kem.Decapsulate(secretKey, ciphertext);
+Console.WriteLine($"Shared secrets match: {sharedSecret1.SequenceEqual(sharedSecret2)}");
+
+// Digital signature with ML-DSA-44
+using var sig = new SigInstance(SigAlgorithm.MlDsa44);
+var (sigPublicKey, sigSecretKey) = sig.GenerateKeypair();
+
+var message = System.Text.Encoding.UTF8.GetBytes("Hello, post-quantum world!");
+var signature = sig.Sign(message, sigSecretKey);
+var isValid = sig.Verify(message, signature, sigPublicKey);
+Console.WriteLine($"Signature valid: {isValid}");</code></pre>
+        </div>
+
+        <div class="note">
+          <strong>Checking availability.</strong> A given build of liboqs need not enable every
+          algorithm. Before constructing an instance you can query
+          <code>KemAlgorithm.MlKem512.IsEnabled()</code> or the equivalent on a signature
+          algorithm, and fall back to another parameter set if necessary.
+        </div>
+      </section>
+
+      <section id="demonstrations">
+        <span class="section-number">Section 4</span>
+        <h2>Demonstrations</h2>
+        <p>
+          The examples that follow are taken from the sample console application in the
+          repository. They are reproduced here as source so that the shape of the API is visible
+          without running anything. Because the library wraps a native component, it executes on
+          the .NET runtime rather than in the browser, so these listings are for reading rather
+          than live execution.
+        </p>
+      </section>
+
+      <section id="kem">
+        <span class="section-number">Section 4.1</span>
+        <h2>Key encapsulation</h2>
+        <p>
+          The exchange has three steps. The receiver, here named Alice, generates a key pair and
+          publishes the public key. The sender, Bob, encapsulates a fresh shared secret against
+          that public key, which yields a ciphertext and the secret. Alice then decapsulates the
+          ciphertext with her secret key and arrives at the same shared secret.
+        </p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span>C# / ML-KEM</span><button class="codeblock__copy" data-label="Copy">Copy</button></div>
+          <pre><code class="language-csharp">using var kem = new KemInstance(KemAlgorithm.MlKem768);
+
+// Alice generates a key pair and publishes the public key.
+var (alicePublicKey, aliceSecretKey) = kem.GenerateKeypair();
+
+// Bob encapsulates a shared secret against Alice's public key.
+var (ciphertext, bobSharedSecret) = kem.Encapsulate(alicePublicKey);
+
+// Alice decapsulates the ciphertext with her secret key.
+var aliceSharedSecret = kem.Decapsulate(aliceSecretKey, ciphertext);
+
+// Both parties now hold the same secret.
+var equal = bobSharedSecret.SequenceEqual(aliceSharedSecret);
+Console.WriteLine($"Shared secrets match: {equal}");</code></pre>
+        </div>
+        <p>
+          The instance also reports the sizes that the chosen parameter set requires, through
+          <code>PublicKeyLength</code>, <code>SecretKeyLength</code>, <code>CiphertextLength</code>
+          and <code>SharedSecretLength</code>. These are useful when allocating storage or when
+          presenting the parameters of a scheme.
+        </p>
+      </section>
+
+      <section id="signatures">
+        <span class="section-number">Section 4.2</span>
+        <h2>Digital signatures</h2>
+        <p>
+          A signature scheme follows a similar pattern. The signer generates a key pair, signs a
+          message with the secret key, and any party holding the public key can verify the
+          result. Altering the message after signing causes verification to fail, which the
+          listing below demonstrates with a deliberately tampered copy.
+        </p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span>C# / ML-DSA</span><button class="codeblock__copy" data-label="Copy">Copy</button></div>
+          <pre><code class="language-csharp">using System.Text;
+
+using var sig = new SigInstance(SigAlgorithm.MlDsa65);
+
+var message = Encoding.UTF8.GetBytes("Hello, ML-DSA from LibOQS.NET!");
+
+// Generate a key pair and sign the message.
+var (publicKey, secretKey) = sig.GenerateKeypair();
+var signature = sig.Sign(message, secretKey);
+
+// Verification succeeds for the original message.
+var verified = sig.Verify(message, signature, publicKey);
+Console.WriteLine($"Signature verified: {verified}");
+
+// Verification fails once the message is altered.
+var tampered = Encoding.UTF8.GetBytes("Hello, ML-DSA from LibOQS.NET? (tampered)");
+var tamperedVerified = sig.Verify(tampered, signature, publicKey);
+Console.WriteLine($"Tampered verification: {tamperedVerified}"); // expected: false</code></pre>
+        </div>
+      </section>
+
+      <section id="key-exchange">
+        <span class="section-number">Section 4.3</span>
+        <h2>Signed key exchange</h2>
+        <p>
+          Key encapsulation establishes a shared secret but says nothing about who the other
+          party is. Combining it with signatures addresses that. Each party holds a long-term
+          signature key pair. The key encapsulation material is signed before it is sent, so that
+          the recipient can confirm its origin before acting on it. The example below uses
+          ML-DSA-44 for the signatures and ML-KEM-512 for the encapsulation.
+        </p>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span>C# / Signed exchange</span><button class="codeblock__copy" data-label="Copy">Copy</button></div>
+          <pre><code class="language-csharp">using var sigAlg = new SigInstance(SigAlgorithm.MlDsa44);
+using var kemAlg = new KemInstance(KemAlgorithm.MlKem512);
+
+// Long-term signature keys for both parties.
+var (aSigPk, aSigSk) = sigAlg.GenerateKeypair();
+var (bSigPk, bSigSk) = sigAlg.GenerateKeypair();
+
+// Alice sends a KEM public key, signed with her long-term key.
+var (kemPk, kemSk) = kemAlg.GenerateKeypair();
+var signature1 = sigAlg.Sign(kemPk, aSigSk);
+
+// Bob verifies Alice's signature before encapsulating.
+if (!sigAlg.Verify(kemPk, signature1, aSigPk))
+    throw new Exception("Failed to verify Alice's signature");
+
+var (kemCt, bKemSs) = kemAlg.Encapsulate(kemPk);
+var signature2 = sigAlg.Sign(kemCt, bSigSk);
+
+// Alice verifies Bob's signature, then decapsulates.
+if (!sigAlg.Verify(kemCt, signature2, bSigPk))
+    throw new Exception("Failed to verify Bob's signature");
+
+var aKemSs = kemAlg.Decapsulate(kemSk, kemCt);
+
+// Both parties now share an authenticated secret.
+Console.WriteLine($"Key exchange successful: {aKemSs.SequenceEqual(bKemSs)}");</code></pre>
+        </div>
+        <div class="aside">
+          <p>
+            The exchange shown here is a teaching example. A deployed protocol would also bind the
+            identities, fix the message formats, and guard against replay. The point of the
+            listing is to show how the two primitives compose, not to specify a protocol.
+          </p>
+        </div>
+      </section>
+
+      <section id="approaches">
+        <span class="section-number">Section 5</span>
+        <h2>Three ways to reach these algorithms from .NET</h2>
+        <p>
+          Maybe LibOQS.NET is one of several routes to post-quantum cryptography on .NET, and it
+          is worth understanding where it sits. The comparison below is drawn from a companion
+          set of samples that exercises the same operations through three libraries: the
+          algorithms built into .NET, the managed BouncyCastle library, and this wrapper.
+        </p>
+
+        <div class="cards">
+          <div class="card">
+            <span class="card__tag">.NET System API</span>
+            <h3>System.Security.Cryptography</h3>
+            <p>
+              The official surface, introduced in .NET 10. It is the natural choice where it is
+              available, but it requires a recent Windows build or OpenSSL 3.5 on Linux, is not
+              offered on macOS, and some of its types are still marked experimental.
+            </p>
+          </div>
+          <div class="card">
+            <span class="card__tag">Fully managed</span>
+            <h3>BouncyCastle</h3>
+            <p>
+              A pure-managed library targeting .NET Standard 2.0. It runs everywhere the runtime
+              runs, including macOS and WebAssembly, which makes it the most portable option, and
+              it covers a sizeable set of schemes.
+            </p>
+          </div>
+          <div class="card">
+            <span class="card__tag">Native wrapper</span>
+            <h3>Maybe LibOQS.NET</h3>
+            <p>
+              A wrapper over the liboqs C library. It exposes the broadest set of parameter sets
+              of the three, and runs on the desktop and server platforms, but because it depends
+              on native code it does not target WebAssembly.
+            </p>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <caption>A side-by-side summary of the three approaches.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Characteristic</th>
+                <th scope="col">System.Security.Cryptography</th>
+                <th scope="col">BouncyCastle</th>
+                <th scope="col">Maybe LibOQS.NET</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Type</th><td>.NET system API</td><td>Fully managed</td><td>Native wrapper</td></tr>
+              <tr><th scope="row">Windows</th><td>Build 26100.7171 and later</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+              <tr><th scope="row">Linux</th><td>OpenSSL 3.5 and later</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+              <tr><th scope="row">macOS</th><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+              <tr><th scope="row">WebAssembly and others</th><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+              <tr><th scope="row">Target framework</th><td>.NET 10, partly experimental</td><td>.NET Standard 2.0</td><td>.NET Standard 2.0</td></tr>
+              <tr><th scope="row">Algorithms covered</th><td>2 of 3 families</td><td>11</td><td>16</td></tr>
+              <tr><th scope="row">Principal merit</th><td>Official</td><td>Maximum portability</td><td>Breadth via liboqs</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          The same ML-KEM exchange written against each library shows how the surfaces differ in
+          shape while performing the same work.
+        </p>
+
+        <h4>System.Security.Cryptography</h4>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span>C#</span><button class="codeblock__copy" data-label="Copy">Copy</button></div>
+          <pre><code class="language-csharp">using System.Security.Cryptography;
+
+using var aliceKeyPair = MLKem.GenerateKey(MLKemAlgorithm.MLKem768);
+var publicKey = aliceKeyPair.ExportEncapsulationKey();
+
+using var bobKey = MLKem.ImportEncapsulationKey(MLKemAlgorithm.MLKem768, publicKey);
+bobKey.Encapsulate(out byte[] ciphertext, out byte[] bobSecret);
+
+byte[] aliceSecret = aliceKeyPair.Decapsulate(ciphertext);
+Console.WriteLine($"Secrets equal: {bobSecret.SequenceEqual(aliceSecret)}");</code></pre>
+        </div>
+
+        <h4>BouncyCastle</h4>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span>C#</span><button class="codeblock__copy" data-label="Copy">Copy</button></div>
+          <pre><code class="language-csharp">using Org.BouncyCastle.Crypto.Kems;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Security;
+
+var random = new SecureRandom();
+var generator = new MLKemKeyPairGenerator();
+generator.Init(new MLKemKeyGenerationParameters(random, MLKemParameters.ml_kem_768));
+var aliceKeyPair = generator.GenerateKeyPair();
+
+var encapsulator = new MLKemEncapsulator(MLKemParameters.ml_kem_768);
+encapsulator.Init(new ParametersWithRandom(aliceKeyPair.Public, random));
+var ciphertext = new byte[encapsulator.EncapsulationLength];
+var bobSecret = new byte[encapsulator.SecretLength];
+encapsulator.Encapsulate(ciphertext, 0, ciphertext.Length, bobSecret, 0, bobSecret.Length);
+
+var decapsulator = new MLKemDecapsulator(MLKemParameters.ml_kem_768);
+decapsulator.Init(aliceKeyPair.Private);
+var aliceSecret = new byte[decapsulator.SecretLength];
+decapsulator.Decapsulate(ciphertext, 0, ciphertext.Length, aliceSecret, 0, aliceSecret.Length);</code></pre>
+        </div>
+
+        <h4>Maybe LibOQS.NET</h4>
+        <div class="codeblock">
+          <div class="codeblock__bar"><span>C#</span><button class="codeblock__copy" data-label="Copy">Copy</button></div>
+          <pre><code class="language-csharp">using LibOQS.NET;
+
+using var kem = new KemInstance(KemAlgorithm.MlKem768);
+var (alicePublic, alicePrivate) = kem.GenerateKeypair();
+var (ciphertext, bobSecret) = kem.Encapsulate(alicePublic);
+var aliceSecret = kem.Decapsulate(alicePrivate, ciphertext);
+Console.WriteLine($"Secrets equal: {bobSecret.SequenceEqual(aliceSecret)}");</code></pre>
+        </div>
+      </section>
+
+      <section id="benchmarks">
+        <span class="section-number">Section 6</span>
+        <h2>Benchmarks</h2>
+        <p>
+          The companion sample set includes a benchmark project built on BenchmarkDotNet that
+          measures each library against the same operations. The figures below were recorded on
+          .NET SDK 10.0.100, Windows 11 26H1, on a Snapdragon X twelve-core processor at 3.40 GHz
+          with 32 GB of memory. They are a single snapshot on one machine and should be read as
+          indicative rather than definitive.
+        </p>
+
+        <div class="note">
+          The <code>Allocated</code> column reflects managed heap allocations only. Because Maybe
+          LibOQS.NET wraps a native library, allocations made on the native heap do not appear in
+          that column, so its memory figures are not directly comparable with the managed
+          libraries.
+        </div>
+
+        <h3>ML-KEM-768</h3>
+        <div class="table-wrap">
+          <table>
+            <caption>Key encapsulation, ML-KEM-768. SC denotes the system API, BC denotes BouncyCastle.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Operation</th>
+                <th scope="col" class="num">Mean</th>
+                <th scope="col" class="num">Error</th>
+                <th scope="col" class="num">Std dev</th>
+                <th scope="col" class="num">Median</th>
+                <th scope="col" class="num">Allocated</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">SC key generation</th><td class="num">51.30 µs</td><td class="num">0.359</td><td class="num">0.300</td><td class="num">51.27 µs</td><td class="num">72 B</td></tr>
+              <tr><th scope="row">SC encapsulate</th><td class="num">25.83 µs</td><td class="num">0.285</td><td class="num">0.253</td><td class="num">25.77 µs</td><td class="num">1,240 B</td></tr>
+              <tr><th scope="row">SC decapsulate</th><td class="num">17.15 µs</td><td class="num">0.019</td><td class="num">0.015</td><td class="num">17.15 µs</td><td class="num">56 B</td></tr>
+              <tr><th scope="row">LibOQS key generation</th><td class="num">33.19 µs</td><td class="num">0.994</td><td class="num">2.930</td><td class="num">33.80 µs</td><td class="num">3,904 B</td></tr>
+              <tr><th scope="row">LibOQS encapsulate</th><td class="num">39.46 µs</td><td class="num">0.424</td><td class="num">0.376</td><td class="num">39.45 µs</td><td class="num">1,168 B</td></tr>
+              <tr><th scope="row">LibOQS decapsulate</th><td class="num">44.74 µs</td><td class="num">1.310</td><td class="num">3.863</td><td class="num">47.05 µs</td><td class="num">56 B</td></tr>
+              <tr><th scope="row">BC key generation</th><td class="num">44.82 µs</td><td class="num">0.885</td><td class="num">0.785</td><td class="num">44.76 µs</td><td class="num">22,946 B</td></tr>
+              <tr><th scope="row">BC encapsulate</th><td class="num">37.09 µs</td><td class="num">0.717</td><td class="num">0.636</td><td class="num">37.15 µs</td><td class="num">28,312 B</td></tr>
+              <tr><th scope="row">BC decapsulate</th><td class="num">50.63 µs</td><td class="num">0.797</td><td class="num">1.241</td><td class="num">50.46 µs</td><td class="num">30,888 B</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>ML-DSA-65</h3>
+        <div class="table-wrap">
+          <table>
+            <caption>Digital signatures, ML-DSA-65, message size 1 KB. SC denotes the system API, BC denotes BouncyCastle.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Operation</th>
+                <th scope="col" class="num">Mean</th>
+                <th scope="col" class="num">Error</th>
+                <th scope="col" class="num">Std dev</th>
+                <th scope="col" class="num">Median</th>
+                <th scope="col" class="num">Allocated</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">LibOQS key generation</th><td class="num">104.7 µs</td><td class="num">1.29</td><td class="num">1.21</td><td class="num">104.6 µs</td><td class="num">6,256 B</td></tr>
+              <tr><th scope="row">LibOQS sign</th><td class="num">409.4 µs</td><td class="num">6.70</td><td class="num">6.27</td><td class="num">410.3 µs</td><td class="num">6,672 B</td></tr>
+              <tr><th scope="row">LibOQS verify</th><td class="num">107.0 µs</td><td class="num">1.22</td><td class="num">1.02</td><td class="num">107.0 µs</td><td class="num">-</td></tr>
+              <tr><th scope="row">BC key generation</th><td class="num">118.0 µs</td><td class="num">1.90</td><td class="num">3.70</td><td class="num">116.5 µs</td><td class="num">191,480 B</td></tr>
+              <tr><th scope="row">BC sign</th><td class="num">251.5 µs</td><td class="num">4.97</td><td class="num">10.26</td><td class="num">255.3 µs</td><td class="num">273,592 B</td></tr>
+              <tr><th scope="row">BC verify</th><td class="num">108.9 µs</td><td class="num">1.56</td><td class="num">1.46</td><td class="num">108.8 µs</td><td class="num">178,216 B</td></tr>
+              <tr><th scope="row">SC key generation</th><td class="num">863.8 µs</td><td class="num">17.26</td><td class="num">48.96</td><td class="num">876.3 µs</td><td class="num">73 B</td></tr>
+              <tr><th scope="row">SC sign</th><td class="num">546.5 µs</td><td class="num">10.83</td><td class="num">24.90</td><td class="num">542.6 µs</td><td class="num">3,337 B</td></tr>
+              <tr><th scope="row">SC verify</th><td class="num">202.0 µs</td><td class="num">3.94</td><td class="num">4.83</td><td class="num">200.9 µs</td><td class="num">320 B</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Read with that caveat in mind, the figures show the three libraries within the same
+          order of magnitude on compute time, with the larger differences appearing in managed
+          allocation, where the native wrapper and the system API both allocate considerably less
+          on the managed heap than the fully managed implementation.
+        </p>
+      </section>
+
+      <section id="algorithms">
+        <span class="section-number">Section 7</span>
+        <h2>Supported algorithms</h2>
+        <p>
+          The library exposes the key encapsulation and signature families that liboqs provides,
+          across their standard parameter sets. The headline schemes are the NIST standards,
+          ML-KEM for key encapsulation and ML-DSA together with SLH-DSA for signatures. Beyond
+          these, the library also surfaces a range of further candidates, including lattice,
+          code-based and multivariate constructions, for evaluation and comparison.
+        </p>
+        <ul>
+          <li>
+            <strong>Key encapsulation:</strong> ML-KEM and Kyber, the code-based BIKE, HQC and
+            Classic McEliece, the NTRU and NTRU Prime families, and FrodoKEM in both its standard
+            and ephemeral forms.
+          </li>
+          <li>
+            <strong>Signatures:</strong> ML-DSA and SLH-DSA, the lattice-based Falcon, and the
+            multivariate and code-based MAYO, CROSS, UOV, SNOVA and MQOM families.
+          </li>
+        </ul>
+        <p>
+          The full enumeration of parameter sets, with the security level associated with each,
+          is set out on a dedicated page.
+        </p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="algorithms.html">Browse the algorithm reference</a>
+        </div>
+      </section>
+
+      <section id="platforms">
+        <span class="section-number">Section 8</span>
+        <h2>Platform support</h2>
+        <p>
+          The packages include native binaries for the following targets, and require no further
+          setup on any of them.
+        </p>
+        <ul>
+          <li>Windows x64 and Windows ARM64</li>
+          <li>Linux x64 and Linux ARM64</li>
+          <li>macOS ARM64</li>
+        </ul>
+        <div class="note">
+          <strong>Known limitations on Windows.</strong> With liboqs 0.16.0-rc1, the pure
+          SLH-DSA variants and the MQOM family are disabled on Windows because a defect in that
+          release causes a stack overflow during signing. BIKE is also disabled on Windows. These
+          algorithms remain available on the other supported platforms.
+        </div>
+      </section>
+
+      <section id="memory">
+        <span class="section-number">Section 9</span>
+        <h2>Resource management</h2>
+        <p>
+          The library holds native state on behalf of each <code>KemInstance</code> and
+          <code>SigInstance</code>. Both implement <code>IDisposable</code>, so the recommended
+          practice is to wrap them in <code>using</code> declarations, as the examples above do,
+          which releases the native handles deterministically when they leave scope.
+        </p>
+        <p>
+          Initialisation happens automatically the first time the library is used, and that path
+          is safe to call from multiple threads. For the algorithm instances themselves, the
+          recommendation is to use a separate instance per thread rather than sharing one. An
+          optional <code>LibOqs.Cleanup()</code> call is available for releasing library-wide
+          resources once at application shutdown.
+        </p>
+      </section>
+
+      <section id="acknowledgements">
+        <span class="section-number">Section 10</span>
+        <h2>Acknowledgements</h2>
+        <p>
+          The cryptography on display here is the work of the
+          <a href="https://openquantumsafe.org/">Open Quantum Safe</a> project and the
+          contributors to <a href="https://github.com/open-quantum-safe/liboqs">liboqs</a>. Maybe
+          LibOQS.NET adds a binding layer and packaging, and nothing more: every key generated,
+          every secret encapsulated and every signature produced is computed by liboqs.
+        </p>
+        <p>
+          The project is independent and is not affiliated with, nor endorsed by, Open Quantum
+          Safe. liboqs is included under its own licence, which is reproduced in the upstream
+          repository. The .NET wrapper is licensed under the MIT licence. Thanks are also due to
+          the broader research community whose published work underlies these schemes.
+        </p>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <div>
+        <h3>Maybe LibOQS.NET</h3>
+        <p style="max-width: 24rem;">
+          A .NET binding for the Open Quantum Safe liboqs library, distributed with the native
+          dependencies bundled. An independent, unaffiliated project.
+        </p>
+      </div>
+      <div>
+        <h3>This project</h3>
+        <ul>
+          <li><a href="https://github.com/filipw/maybe-liboqs-dotnet">Source repository</a></li>
+          <li><a href="algorithms.html">Algorithm reference</a></li>
+          <li><a href="#getting-started">Getting started</a></li>
+          <li><a href="#benchmarks">Benchmarks</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Upstream and background</h3>
+        <ul>
+          <li><a href="https://openquantumsafe.org/">Open Quantum Safe</a></li>
+          <li><a href="https://github.com/open-quantum-safe/liboqs">liboqs library</a></li>
+          <li><a href="https://csrc.nist.gov/projects/post-quantum-cryptography">NIST PQC project</a></li>
+          <li><a href="https://www.strathweb.com/2023/02/post-quantum-cryptography-in-net/">Background reading</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__colophon">
+      <p>
+        Maybe LibOQS.NET is licensed under the MIT licence. liboqs is distributed under its own
+        licence. This site is not affiliated with the Open Quantum Safe project.
+      </p>
+      <p>Set in the system serif typeface. No external resources are loaded.</p>
+    </div>
+  </footer>
+
+  <script src="assets/highlight.js"></script>
+  <script src="assets/site.js"></script>
+</body>
+</html>
