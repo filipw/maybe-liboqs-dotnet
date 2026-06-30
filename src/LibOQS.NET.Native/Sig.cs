@@ -107,18 +107,6 @@ public static class Sig
     public static readonly string OQS_SIG_alg_falcon_1024 = "Falcon-1024";
     public static readonly string OQS_SIG_alg_falcon_padded_512 = "Falcon-padded-512";
     public static readonly string OQS_SIG_alg_falcon_padded_1024 = "Falcon-padded-1024";
-    public static readonly string OQS_SIG_alg_sphincs_sha2_128f_simple = "SPHINCS+-SHA2-128f-simple";
-    public static readonly string OQS_SIG_alg_sphincs_sha2_128s_simple = "SPHINCS+-SHA2-128s-simple";
-    public static readonly string OQS_SIG_alg_sphincs_sha2_192f_simple = "SPHINCS+-SHA2-192f-simple";
-    public static readonly string OQS_SIG_alg_sphincs_sha2_192s_simple = "SPHINCS+-SHA2-192s-simple";
-    public static readonly string OQS_SIG_alg_sphincs_sha2_256f_simple = "SPHINCS+-SHA2-256f-simple";
-    public static readonly string OQS_SIG_alg_sphincs_sha2_256s_simple = "SPHINCS+-SHA2-256s-simple";
-    public static readonly string OQS_SIG_alg_sphincs_shake_128f_simple = "SPHINCS+-SHAKE-128f-simple";
-    public static readonly string OQS_SIG_alg_sphincs_shake_128s_simple = "SPHINCS+-SHAKE-128s-simple";
-    public static readonly string OQS_SIG_alg_sphincs_shake_192f_simple = "SPHINCS+-SHAKE-192f-simple";
-    public static readonly string OQS_SIG_alg_sphincs_shake_192s_simple = "SPHINCS+-SHAKE-192s-simple";
-    public static readonly string OQS_SIG_alg_sphincs_shake_256f_simple = "SPHINCS+-SHAKE-256f-simple";
-    public static readonly string OQS_SIG_alg_sphincs_shake_256s_simple = "SPHINCS+-SHAKE-256s-simple";
     public static readonly string OQS_SIG_alg_mayo_1 = "MAYO-1";
     public static readonly string OQS_SIG_alg_mayo_2 = "MAYO-2";
     public static readonly string OQS_SIG_alg_mayo_3 = "MAYO-3";
@@ -181,4 +169,18 @@ public static class Sig
     public static readonly string OQS_SIG_alg_snova_24_5_5 = "SNOVA_24_5_5";
     public static readonly string OQS_SIG_alg_snova_60_10_4 = "SNOVA_60_10_4";
     public static readonly string OQS_SIG_alg_snova_29_6_5 = "SNOVA_29_6_5";
+
+    // MQOM identifiers
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat1_gf16_fast_r3 = "mqom2_cat1_gf16_fast_r3";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat1_gf16_fast_r5 = "mqom2_cat1_gf16_fast_r5";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat1_gf16_short_r3 = "mqom2_cat1_gf16_short_r3";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat1_gf16_short_r5 = "mqom2_cat1_gf16_short_r5";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat3_gf16_fast_r3 = "mqom2_cat3_gf16_fast_r3";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat3_gf16_fast_r5 = "mqom2_cat3_gf16_fast_r5";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat3_gf16_short_r3 = "mqom2_cat3_gf16_short_r3";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat3_gf16_short_r5 = "mqom2_cat3_gf16_short_r5";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat5_gf16_fast_r3 = "mqom2_cat5_gf16_fast_r3";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat5_gf16_fast_r5 = "mqom2_cat5_gf16_fast_r5";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat5_gf16_short_r3 = "mqom2_cat5_gf16_short_r3";
+    public static readonly string OQS_SIG_alg_mqom_mqom2_cat5_gf16_short_r5 = "mqom2_cat5_gf16_short_r5";
 }

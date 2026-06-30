@@ -113,8 +113,8 @@ finally
 
 ## Features
 
-- **Key Encapsulation Mechanisms (KEMs)**: ML-KEM, Kyber, BIKE, HQC, NTRU, Classic McEliece, NTRU Prime, FrodoKEM
-- **Digital Signatures**: ML-DSA, SLH-DSA, Falcon, SPHINCS+, MAYO, CROSS, UOV, SNOVA
+- **Key Encapsulation Mechanisms (KEMs)**: ML-KEM, Kyber, BIKE, HQC, NTRU, Classic McEliece, NTRU Prime, FrodoKEM (standard/salted and ephemeral eFrodoKEM)
+- **Digital Signatures**: ML-DSA, SLH-DSA, Falcon, MAYO, CROSS, UOV, SNOVA, MQOM
 - **New Features**: Support for context strings in signatures and derandomized (deterministic) operations in KEM.
 - **Type-safe API**: Strong typing with enums for algorithms and proper resource management
 - **Memory management**: Automatic cleanup of native resources using IDisposable pattern
@@ -128,22 +128,23 @@ finally
 - **ML-KEM** (NIST standardized): ML-KEM-512, ML-KEM-768, ML-KEM-1024
 - **Kyber**: Kyber512, Kyber768, Kyber1024
 - **BIKE**: BIKE-L1, BIKE-L3, BIKE-L5
-- **HQC**: HQC-128, HQC-192, HQC-256
+- **HQC**: HQC-1, HQC-3, HQC-5
 - **NTRU**: NTRU-HPS-2048-509, NTRU-HPS-2048-677, NTRU-HPS-4096-821, NTRU-HPS-4096-1229, NTRU-HRSS-701, NTRU-HRSS-1373
 - **Classic McEliece**: All 10 variants (e.g., 348864, 460896, 6688128, 6960119, 8192128 with fast variants)
 - **NTRU Prime**: sntrup761
-- **FrodoKEM**: FrodoKEM-640-AES, FrodoKEM-640-SHAKE, FrodoKEM-976-AES, FrodoKEM-976-SHAKE, FrodoKEM-1344-AES, FrodoKEM-1344-SHAKE
+- **FrodoKEM** (standard, salted variant): FrodoKEM-640-AES, FrodoKEM-640-SHAKE, FrodoKEM-976-AES, FrodoKEM-976-SHAKE, FrodoKEM-1344-AES, FrodoKEM-1344-SHAKE
+- **eFrodoKEM** (ephemeral variant): eFrodoKEM-640-AES, eFrodoKEM-640-SHAKE, eFrodoKEM-976-AES, eFrodoKEM-976-SHAKE, eFrodoKEM-1344-AES, eFrodoKEM-1344-SHAKE
 
 ### Digital Signatures
 
 - **ML-DSA** (NIST standardized): ML-DSA-44, ML-DSA-65, ML-DSA-87
 - **SLH-DSA** (NIST standardized): All 12 pure variants (SHA2 and SHAKE, 128/192/256, fast/small)
 - **Falcon**: Falcon-512, Falcon-1024, Falcon-Padded-512, Falcon-Padded-1024
-- **SPHINCS+**: All "simple" variants (SHA2 and SHAKE, 128/192/256, fast/small)
 - **MAYO**: MAYO-1, MAYO-2, MAYO-3, MAYO-5
 - **CROSS**: All 18 variants (RSDP/RSDPG, Balanced/Fast/Small)
 - **UOV**: All 12 variants (Ip, Is, III, V; with pkc/skc variants)
 - **SNOVA**: All 12 variants
+- **MQOM**: All 12 variants (mqom2_cat1/3/5_gf16_fast/short_r3/r5)
 
 ## Algorithm Availability
 
@@ -232,7 +233,7 @@ git submodule update
    This will:
    - Configure and build liboqs as a shared library
    - Copy the resulting DLL/so/dylib to the appropriate directories
-   - Enable all common quantum-resistant algorithms (ML-KEM, ML-DSA, SLH-DSA, Kyber, Falcon, FrodoKEM, BIKE, HQC, SPHINCS+, NTRU, SNOVA, etc.)
+   - Enable all common quantum-resistant algorithms (ML-KEM, ML-DSA, SLH-DSA, Kyber, Falcon, FrodoKEM, BIKE, HQC, NTRU, SNOVA, MQOM, etc.)
 
 2. **Build the .NET libraries:**
 
@@ -255,7 +256,7 @@ git submodule update
 
 ### Submodule Management
 
-This project uses [liboqs v0.15.0](https://github.com/Open-Quantum-Safe/liboqs/releases/tag/0.15.0) as a git submodule.
+This project uses [liboqs 0.16.0-rc1](https://github.com/Open-Quantum-Safe/liboqs/releases/tag/0.16.0-rc1) as a git submodule.
 
 **Update to latest liboqs version:**
 ```bash
@@ -292,7 +293,7 @@ LibOQS.NET supports the following platforms out of the box with no additional se
 
 > [!NOTE]
 > **Platform Limitations**: 
-> - **Windows**: `SLH-DSA` (Pure variants) are currently disabled due to a known bug in `liboqs` 0.15.0 that causes verification failures on Windows. `BIKE` is also disabled on Windows.
+> - **Windows**: `SLH-DSA` (Pure variants) and `MQOM` are currently disabled due to known bugs in `liboqs` 0.16.0-rc1 that cause a stack overflow during signing on Windows. `BIKE` is also disabled on Windows.
 
 The NuGet packages include all necessary native libraries for these platforms.
 

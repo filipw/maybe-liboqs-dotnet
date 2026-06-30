@@ -259,9 +259,9 @@ public static class LibOqsDemo
 
             var secLevel = kemAlg switch
             {
-                KemAlgorithm.MlKem512 or KemAlgorithm.Kyber512 or KemAlgorithm.BikeL1 or KemAlgorithm.Hqc128 or KemAlgorithm.ClassicMcEliece348864 or KemAlgorithm.NtruHps2048509 or KemAlgorithm.NtruHrss701 => "Level 1",
-                KemAlgorithm.MlKem768 or KemAlgorithm.Kyber768 or KemAlgorithm.BikeL3 or KemAlgorithm.Hqc192 or KemAlgorithm.NtruPrimeSntrup761 or KemAlgorithm.ClassicMcEliece460896 or KemAlgorithm.NtruHps2048677 => "Level 3",
-                KemAlgorithm.MlKem1024 or KemAlgorithm.Kyber1024 or KemAlgorithm.BikeL5 or KemAlgorithm.Hqc256 or KemAlgorithm.ClassicMcEliece6688128 or KemAlgorithm.ClassicMcEliece6960119 or KemAlgorithm.ClassicMcEliece8192128 or KemAlgorithm.NtruHps4096821 or KemAlgorithm.NtruHps40961229 or KemAlgorithm.NtruHrss1373 => "Level 5",
+                KemAlgorithm.MlKem512 or KemAlgorithm.Kyber512 or KemAlgorithm.BikeL1 or KemAlgorithm.Hqc1 or KemAlgorithm.ClassicMcEliece348864 or KemAlgorithm.NtruHps2048509 or KemAlgorithm.NtruHrss701 => "Level 1",
+                KemAlgorithm.MlKem768 or KemAlgorithm.Kyber768 or KemAlgorithm.BikeL3 or KemAlgorithm.Hqc3 or KemAlgorithm.NtruPrimeSntrup761 or KemAlgorithm.ClassicMcEliece460896 or KemAlgorithm.NtruHps2048677 => "Level 3",
+                KemAlgorithm.MlKem1024 or KemAlgorithm.Kyber1024 or KemAlgorithm.BikeL5 or KemAlgorithm.Hqc5 or KemAlgorithm.ClassicMcEliece6688128 or KemAlgorithm.ClassicMcEliece6960119 or KemAlgorithm.ClassicMcEliece8192128 or KemAlgorithm.NtruHps4096821 or KemAlgorithm.NtruHps40961229 or KemAlgorithm.NtruHrss1373 => "Level 5",
                 _ when kemAlg.ToString().Contains("640") => "Level 1",
                 _ when kemAlg.ToString().Contains("976") => "Level 3",
                 _ when kemAlg.ToString().Contains("1344") => "Level 5",

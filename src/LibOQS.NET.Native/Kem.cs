@@ -100,9 +100,9 @@ public static class Kem
     public static readonly string OQS_KEM_alg_bike_l1 = "BIKE-L1";
     public static readonly string OQS_KEM_alg_bike_l3 = "BIKE-L3";
     public static readonly string OQS_KEM_alg_bike_l5 = "BIKE-L5";
-    public static readonly string OQS_KEM_alg_hqc_128 = "HQC-128";
-    public static readonly string OQS_KEM_alg_hqc_192 = "HQC-192";
-    public static readonly string OQS_KEM_alg_hqc_256 = "HQC-256";
+    public static readonly string OQS_KEM_alg_hqc_1 = "HQC-1";
+    public static readonly string OQS_KEM_alg_hqc_3 = "HQC-3";
+    public static readonly string OQS_KEM_alg_hqc_5 = "HQC-5";
     public static readonly string OQS_KEM_alg_ntru_hps2048509 = "NTRU-HPS-2048-509";
     public static readonly string OQS_KEM_alg_ntru_hps2048677 = "NTRU-HPS-2048-677";
     public static readonly string OQS_KEM_alg_ntru_hps4096821 = "NTRU-HPS-4096-821";
@@ -126,4 +126,10 @@ public static class Kem
     public static readonly string OQS_KEM_alg_frodokem_976_shake = "FrodoKEM-976-SHAKE";
     public static readonly string OQS_KEM_alg_frodokem_1344_aes = "FrodoKEM-1344-AES";
     public static readonly string OQS_KEM_alg_frodokem_1344_shake = "FrodoKEM-1344-SHAKE";
+    public static readonly string OQS_KEM_alg_efrodokem_640_aes = "eFrodoKEM-640-AES";
+    public static readonly string OQS_KEM_alg_efrodokem_640_shake = "eFrodoKEM-640-SHAKE";
+    public static readonly string OQS_KEM_alg_efrodokem_976_aes = "eFrodoKEM-976-AES";
+    public static readonly string OQS_KEM_alg_efrodokem_976_shake = "eFrodoKEM-976-SHAKE";
+    public static readonly string OQS_KEM_alg_efrodokem_1344_aes = "eFrodoKEM-1344-AES";
+    public static readonly string OQS_KEM_alg_efrodokem_1344_shake = "eFrodoKEM-1344-SHAKE";
 }

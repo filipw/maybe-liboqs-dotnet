@@ -16,9 +16,9 @@ public class KemTests
     [InlineData(KemAlgorithm.BikeL1)]
     [InlineData(KemAlgorithm.BikeL3)]
     [InlineData(KemAlgorithm.BikeL5)]
-    [InlineData(KemAlgorithm.Hqc128)]
-    [InlineData(KemAlgorithm.Hqc192)]
-    [InlineData(KemAlgorithm.Hqc256)]
+    [InlineData(KemAlgorithm.Hqc1)]
+    [InlineData(KemAlgorithm.Hqc3)]
+    [InlineData(KemAlgorithm.Hqc5)]
     [InlineData(KemAlgorithm.NtruHps2048509)]
     [InlineData(KemAlgorithm.NtruHps2048677)]
     [InlineData(KemAlgorithm.NtruHps4096821)]
@@ -42,6 +42,12 @@ public class KemTests
     [InlineData(KemAlgorithm.FrodoKem976Shake)]
     [InlineData(KemAlgorithm.FrodoKem1344Aes)]
     [InlineData(KemAlgorithm.FrodoKem1344Shake)]
+    [InlineData(KemAlgorithm.EFrodoKem640Aes)]
+    [InlineData(KemAlgorithm.EFrodoKem640Shake)]
+    [InlineData(KemAlgorithm.EFrodoKem976Aes)]
+    [InlineData(KemAlgorithm.EFrodoKem976Shake)]
+    [InlineData(KemAlgorithm.EFrodoKem1344Aes)]
+    [InlineData(KemAlgorithm.EFrodoKem1344Shake)]
     public void KemEncapsDecaps_ShouldSucceed(KemAlgorithm algorithm)
     {
         Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
@@ -151,6 +157,12 @@ public class KemTests
     [InlineData(KemAlgorithm.FrodoKem976Shake)]
     [InlineData(KemAlgorithm.FrodoKem1344Aes)]
     [InlineData(KemAlgorithm.FrodoKem1344Shake)]
+    [InlineData(KemAlgorithm.EFrodoKem640Aes)]
+    [InlineData(KemAlgorithm.EFrodoKem640Shake)]
+    [InlineData(KemAlgorithm.EFrodoKem976Aes)]
+    [InlineData(KemAlgorithm.EFrodoKem976Shake)]
+    [InlineData(KemAlgorithm.EFrodoKem1344Aes)]
+    [InlineData(KemAlgorithm.EFrodoKem1344Shake)]
     public void FrodoKem_ShouldSucceed(KemAlgorithm algorithm)
     {
         Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
@@ -177,7 +189,7 @@ public class KemTests
     [InlineData(KemAlgorithm.MlKem512)]
     [InlineData(KemAlgorithm.Kyber512)]
     [InlineData(KemAlgorithm.BikeL1)]
-    [InlineData(KemAlgorithm.Hqc128)]
+    [InlineData(KemAlgorithm.Hqc1)]
     [InlineData(KemAlgorithm.NtruHps2048509)]
     [InlineData(KemAlgorithm.NtruPrimeSntrup761)]
     // [InlineData(KemAlgorithm.ClassicMcEliece348864)]

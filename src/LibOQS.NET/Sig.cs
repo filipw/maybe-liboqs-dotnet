@@ -22,30 +22,6 @@ public enum SigAlgorithm
     FalconPadded512,
     /// <summary>Falcon-padded-1024</summary>
     FalconPadded1024,
-    /// <summary>SPHINCS+-SHA2-128f-simple</summary>
-    SphincsPlusSha2128fSimple,
-    /// <summary>SPHINCS+-SHA2-128s-simple</summary>
-    SphincsPlusSha2128sSimple,
-    /// <summary>SPHINCS+-SHA2-192f-simple</summary>
-    SphincsPlusSha2192fSimple,
-    /// <summary>SPHINCS+-SHA2-192s-simple</summary>
-    SphincsPlusSha2192sSimple,
-    /// <summary>SPHINCS+-SHA2-256f-simple</summary>
-    SphincsPlusSha2256fSimple,
-    /// <summary>SPHINCS+-SHA2-256s-simple</summary>
-    SphincsPlusSha2256sSimple,
-    /// <summary>SPHINCS+-SHAKE-128f-simple</summary>
-    SphincsPlusShake128fSimple,
-    /// <summary>SPHINCS+-SHAKE-128s-simple</summary>
-    SphincsPlusShake128sSimple,
-    /// <summary>SPHINCS+-SHAKE-192f-simple</summary>
-    SphincsPlusShake192fSimple,
-    /// <summary>SPHINCS+-SHAKE-192s-simple</summary>
-    SphincsPlusShake192sSimple,
-    /// <summary>SPHINCS+-SHAKE-256f-simple</summary>
-    SphincsPlusShake256fSimple,
-    /// <summary>SPHINCS+-SHAKE-256s-simple</summary>
-    SphincsPlusShake256sSimple,
     /// <summary>MAYO-1</summary>
     Mayo1,
     /// <summary>MAYO-2</summary>
@@ -162,6 +138,30 @@ public enum SigAlgorithm
     Snova60_10_4,
     /// <summary>SNOVA_29_6_5</summary>
     Snova29_6_5,
+    /// <summary>mqom2_cat1_gf16_fast_r3</summary>
+    Mqom2Cat1Gf16FastR3,
+    /// <summary>mqom2_cat1_gf16_fast_r5</summary>
+    Mqom2Cat1Gf16FastR5,
+    /// <summary>mqom2_cat1_gf16_short_r3</summary>
+    Mqom2Cat1Gf16ShortR3,
+    /// <summary>mqom2_cat1_gf16_short_r5</summary>
+    Mqom2Cat1Gf16ShortR5,
+    /// <summary>mqom2_cat3_gf16_fast_r3</summary>
+    Mqom2Cat3Gf16FastR3,
+    /// <summary>mqom2_cat3_gf16_fast_r5</summary>
+    Mqom2Cat3Gf16FastR5,
+    /// <summary>mqom2_cat3_gf16_short_r3</summary>
+    Mqom2Cat3Gf16ShortR3,
+    /// <summary>mqom2_cat3_gf16_short_r5</summary>
+    Mqom2Cat3Gf16ShortR5,
+    /// <summary>mqom2_cat5_gf16_fast_r3</summary>
+    Mqom2Cat5Gf16FastR3,
+    /// <summary>mqom2_cat5_gf16_fast_r5</summary>
+    Mqom2Cat5Gf16FastR5,
+    /// <summary>mqom2_cat5_gf16_short_r3</summary>
+    Mqom2Cat5Gf16ShortR3,
+    /// <summary>mqom2_cat5_gf16_short_r5</summary>
+    Mqom2Cat5Gf16ShortR5,
 }
 
 /// <summary>
@@ -181,18 +181,6 @@ public static class SigAlgorithmExtensions
         SigAlgorithm.Falcon1024 => Sig.OQS_SIG_alg_falcon_1024,
         SigAlgorithm.FalconPadded512 => Sig.OQS_SIG_alg_falcon_padded_512,
         SigAlgorithm.FalconPadded1024 => Sig.OQS_SIG_alg_falcon_padded_1024,
-        SigAlgorithm.SphincsPlusSha2128fSimple => Sig.OQS_SIG_alg_sphincs_sha2_128f_simple,
-        SigAlgorithm.SphincsPlusSha2128sSimple => Sig.OQS_SIG_alg_sphincs_sha2_128s_simple,
-        SigAlgorithm.SphincsPlusSha2192fSimple => Sig.OQS_SIG_alg_sphincs_sha2_192f_simple,
-        SigAlgorithm.SphincsPlusSha2192sSimple => Sig.OQS_SIG_alg_sphincs_sha2_192s_simple,
-        SigAlgorithm.SphincsPlusSha2256fSimple => Sig.OQS_SIG_alg_sphincs_sha2_256f_simple,
-        SigAlgorithm.SphincsPlusSha2256sSimple => Sig.OQS_SIG_alg_sphincs_sha2_256s_simple,
-        SigAlgorithm.SphincsPlusShake128fSimple => Sig.OQS_SIG_alg_sphincs_shake_128f_simple,
-        SigAlgorithm.SphincsPlusShake128sSimple => Sig.OQS_SIG_alg_sphincs_shake_128s_simple,
-        SigAlgorithm.SphincsPlusShake192fSimple => Sig.OQS_SIG_alg_sphincs_shake_192f_simple,
-        SigAlgorithm.SphincsPlusShake192sSimple => Sig.OQS_SIG_alg_sphincs_shake_192s_simple,
-        SigAlgorithm.SphincsPlusShake256fSimple => Sig.OQS_SIG_alg_sphincs_shake_256f_simple,
-        SigAlgorithm.SphincsPlusShake256sSimple => Sig.OQS_SIG_alg_sphincs_shake_256s_simple,
         SigAlgorithm.Mayo1 => Sig.OQS_SIG_alg_mayo_1,
         SigAlgorithm.Mayo2 => Sig.OQS_SIG_alg_mayo_2,
         SigAlgorithm.Mayo3 => Sig.OQS_SIG_alg_mayo_3,
@@ -251,6 +239,18 @@ public static class SigAlgorithmExtensions
         SigAlgorithm.Snova24_5_5 => Sig.OQS_SIG_alg_snova_24_5_5,
         SigAlgorithm.Snova60_10_4 => Sig.OQS_SIG_alg_snova_60_10_4,
         SigAlgorithm.Snova29_6_5 => Sig.OQS_SIG_alg_snova_29_6_5,
+        SigAlgorithm.Mqom2Cat1Gf16FastR3 => Sig.OQS_SIG_alg_mqom_mqom2_cat1_gf16_fast_r3,
+        SigAlgorithm.Mqom2Cat1Gf16FastR5 => Sig.OQS_SIG_alg_mqom_mqom2_cat1_gf16_fast_r5,
+        SigAlgorithm.Mqom2Cat1Gf16ShortR3 => Sig.OQS_SIG_alg_mqom_mqom2_cat1_gf16_short_r3,
+        SigAlgorithm.Mqom2Cat1Gf16ShortR5 => Sig.OQS_SIG_alg_mqom_mqom2_cat1_gf16_short_r5,
+        SigAlgorithm.Mqom2Cat3Gf16FastR3 => Sig.OQS_SIG_alg_mqom_mqom2_cat3_gf16_fast_r3,
+        SigAlgorithm.Mqom2Cat3Gf16FastR5 => Sig.OQS_SIG_alg_mqom_mqom2_cat3_gf16_fast_r5,
+        SigAlgorithm.Mqom2Cat3Gf16ShortR3 => Sig.OQS_SIG_alg_mqom_mqom2_cat3_gf16_short_r3,
+        SigAlgorithm.Mqom2Cat3Gf16ShortR5 => Sig.OQS_SIG_alg_mqom_mqom2_cat3_gf16_short_r5,
+        SigAlgorithm.Mqom2Cat5Gf16FastR3 => Sig.OQS_SIG_alg_mqom_mqom2_cat5_gf16_fast_r3,
+        SigAlgorithm.Mqom2Cat5Gf16FastR5 => Sig.OQS_SIG_alg_mqom_mqom2_cat5_gf16_fast_r5,
+        SigAlgorithm.Mqom2Cat5Gf16ShortR3 => Sig.OQS_SIG_alg_mqom_mqom2_cat5_gf16_short_r3,
+        SigAlgorithm.Mqom2Cat5Gf16ShortR5 => Sig.OQS_SIG_alg_mqom_mqom2_cat5_gf16_short_r5,
         _ => throw new ArgumentException($"Unknown algorithm: {algorithm}")
     };
 
