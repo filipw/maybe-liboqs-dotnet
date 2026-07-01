@@ -294,6 +294,7 @@ LibOQS.NET supports the following platforms out of the box with no additional se
 > [!NOTE]
 > **Platform Limitations**: 
 > - **Windows**: `SLH-DSA` (Pure variants) and `MQOM` are currently disabled due to known bugs in `liboqs` 0.16.0-rc1 that cause a stack overflow during signing on Windows. `BIKE` is also disabled on Windows.
+> - **macOS**: `MQOM` is disabled because its `short` variants overflow the stack during signing in `liboqs` 0.16.0-rc1.
 
 The NuGet packages include all necessary native libraries for these platforms.
 

@@ -53,7 +53,7 @@ cmake .. \
     -DOQS_ENABLE_SIG_MAYO=ON \
     -DOQS_ENABLE_SIG_CROSS=ON \
     -DOQS_ENABLE_SIG_UOV=ON \
-    -DOQS_ENABLE_SIG_MQOM=ON \
+    -DOQS_ENABLE_SIG_MQOM=OFF \
     -DOQS_ENABLE_SIG_SNOVA=ON
 
 echo "Building liboqs..."
