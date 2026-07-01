@@ -26,3 +26,4 @@ src/native/liboqs.so.0.13.0
 
 bin/
 obj/
+src/native/runtimes/win-arm64/native/oqs.dll

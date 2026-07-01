@@ -14,18 +14,6 @@ public class SigTests
     [InlineData(SigAlgorithm.Falcon1024)]
     [InlineData(SigAlgorithm.FalconPadded512)]
     [InlineData(SigAlgorithm.FalconPadded1024)]
-    [InlineData(SigAlgorithm.SphincsPlusSha2128fSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusSha2128sSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusSha2192fSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusSha2192sSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusSha2256fSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusSha2256sSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusShake128fSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusShake128sSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusShake192fSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusShake192sSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusShake256fSimple)]
-    [InlineData(SigAlgorithm.SphincsPlusShake256sSimple)]
     [InlineData(SigAlgorithm.Mayo1)]
     [InlineData(SigAlgorithm.Mayo2)]
     [InlineData(SigAlgorithm.Mayo3)]
@@ -66,6 +54,10 @@ public class SigTests
     [InlineData(SigAlgorithm.SlhDsaShake128fPure)]
     [InlineData(SigAlgorithm.Snova24_5_4)]
     [InlineData(SigAlgorithm.Snova24_5_4_Shake)]
+    [InlineData(SigAlgorithm.Mqom2Cat1Gf16FastR3)]
+    [InlineData(SigAlgorithm.Mqom2Cat1Gf16ShortR3)]
+    [InlineData(SigAlgorithm.Mqom2Cat3Gf16FastR3)]
+    [InlineData(SigAlgorithm.Mqom2Cat5Gf16FastR3)]
     public void SigSignVerify_ShouldSucceed(SigAlgorithm algorithm)
     {
         Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
@@ -214,7 +206,6 @@ public class SigTests
     [InlineData(SigAlgorithm.MlDsa44)]
     [InlineData(SigAlgorithm.Falcon512)]
     [InlineData(SigAlgorithm.FalconPadded512)]
-    [InlineData(SigAlgorithm.SphincsPlusSha2128fSimple)]
     [InlineData(SigAlgorithm.Mayo1)]
     [InlineData(SigAlgorithm.CrossRsdp128Balanced)]
     [InlineData(SigAlgorithm.UovOvIs)]
@@ -390,7 +381,7 @@ public class SigTests
         var signature = sig.Sign(message, secretKey);
 
         // Falcon is known for compact signatures
-        // Signature should be much smaller than SPHINCS+ variants
+        // Signature should be much smaller than hash-based signature variants
         Assert.True(signature.Length < 2000, $"Falcon signature too large: {signature.Length} bytes");
 
         // Verify the signature works

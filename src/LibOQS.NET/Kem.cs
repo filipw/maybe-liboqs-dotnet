@@ -26,12 +26,12 @@ public enum KemAlgorithm
     BikeL3,
     /// <summary>BIKE-L5</summary>
     BikeL5,
-    /// <summary>HQC-128</summary>
-    Hqc128,
-    /// <summary>HQC-192</summary>
-    Hqc192,
-    /// <summary>HQC-256</summary>
-    Hqc256,
+    /// <summary>HQC-1</summary>
+    Hqc1,
+    /// <summary>HQC-3</summary>
+    Hqc3,
+    /// <summary>HQC-5</summary>
+    Hqc5,
     /// <summary>NTRU-HPS-2048-509</summary>
     NtruHps2048509,
     /// <summary>NTRU-HPS-2048-677</summary>
@@ -66,18 +66,30 @@ public enum KemAlgorithm
     ClassicMcEliece8192128,
     /// <summary>Classic-McEliece-8192128f</summary>
     ClassicMcEliece8192128f,
-    /// <summary>FrodoKEM-640-AES</summary>
+    /// <summary>FrodoKEM-640-AES (standard, salted variant)</summary>
     FrodoKem640Aes,
-    /// <summary>FrodoKEM-640-SHAKE</summary>
+    /// <summary>FrodoKEM-640-SHAKE (standard, salted variant)</summary>
     FrodoKem640Shake,
-    /// <summary>FrodoKEM-976-AES</summary>
+    /// <summary>FrodoKEM-976-AES (standard, salted variant)</summary>
     FrodoKem976Aes,
-    /// <summary>FrodoKEM-976-SHAKE</summary>
+    /// <summary>FrodoKEM-976-SHAKE (standard, salted variant)</summary>
     FrodoKem976Shake,
-    /// <summary>FrodoKEM-1344-AES</summary>
+    /// <summary>FrodoKEM-1344-AES (standard, salted variant)</summary>
     FrodoKem1344Aes,
-    /// <summary>FrodoKEM-1344-SHAKE</summary>
+    /// <summary>FrodoKEM-1344-SHAKE (standard, salted variant)</summary>
     FrodoKem1344Shake,
+    /// <summary>eFrodoKEM-640-AES (ephemeral variant)</summary>
+    EFrodoKem640Aes,
+    /// <summary>eFrodoKEM-640-SHAKE (ephemeral variant)</summary>
+    EFrodoKem640Shake,
+    /// <summary>eFrodoKEM-976-AES (ephemeral variant)</summary>
+    EFrodoKem976Aes,
+    /// <summary>eFrodoKEM-976-SHAKE (ephemeral variant)</summary>
+    EFrodoKem976Shake,
+    /// <summary>eFrodoKEM-1344-AES (ephemeral variant)</summary>
+    EFrodoKem1344Aes,
+    /// <summary>eFrodoKEM-1344-SHAKE (ephemeral variant)</summary>
+    EFrodoKem1344Shake,
 }
 
 /// <summary>
@@ -99,9 +111,9 @@ public static class KemAlgorithmExtensions
         KemAlgorithm.BikeL1 => Kem.OQS_KEM_alg_bike_l1,
         KemAlgorithm.BikeL3 => Kem.OQS_KEM_alg_bike_l3,
         KemAlgorithm.BikeL5 => Kem.OQS_KEM_alg_bike_l5,
-        KemAlgorithm.Hqc128 => Kem.OQS_KEM_alg_hqc_128,
-        KemAlgorithm.Hqc192 => Kem.OQS_KEM_alg_hqc_192,
-        KemAlgorithm.Hqc256 => Kem.OQS_KEM_alg_hqc_256,
+        KemAlgorithm.Hqc1 => Kem.OQS_KEM_alg_hqc_1,
+        KemAlgorithm.Hqc3 => Kem.OQS_KEM_alg_hqc_3,
+        KemAlgorithm.Hqc5 => Kem.OQS_KEM_alg_hqc_5,
         KemAlgorithm.NtruHps2048509 => Kem.OQS_KEM_alg_ntru_hps2048509,
         KemAlgorithm.NtruHps2048677 => Kem.OQS_KEM_alg_ntru_hps2048677,
         KemAlgorithm.NtruHps4096821 => Kem.OQS_KEM_alg_ntru_hps4096821,
@@ -125,6 +137,12 @@ public static class KemAlgorithmExtensions
         KemAlgorithm.FrodoKem976Shake => Kem.OQS_KEM_alg_frodokem_976_shake,
         KemAlgorithm.FrodoKem1344Aes => Kem.OQS_KEM_alg_frodokem_1344_aes,
         KemAlgorithm.FrodoKem1344Shake => Kem.OQS_KEM_alg_frodokem_1344_shake,
+        KemAlgorithm.EFrodoKem640Aes => Kem.OQS_KEM_alg_efrodokem_640_aes,
+        KemAlgorithm.EFrodoKem640Shake => Kem.OQS_KEM_alg_efrodokem_640_shake,
+        KemAlgorithm.EFrodoKem976Aes => Kem.OQS_KEM_alg_efrodokem_976_aes,
+        KemAlgorithm.EFrodoKem976Shake => Kem.OQS_KEM_alg_efrodokem_976_shake,
+        KemAlgorithm.EFrodoKem1344Aes => Kem.OQS_KEM_alg_efrodokem_1344_aes,
+        KemAlgorithm.EFrodoKem1344Shake => Kem.OQS_KEM_alg_efrodokem_1344_shake,
         _ => throw new ArgumentException($"Unknown algorithm: {algorithm}")
     };
 
