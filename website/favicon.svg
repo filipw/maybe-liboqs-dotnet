@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Lattice and key motif">
+  <rect width="64" height="64" rx="8" fill="#FFF1E5"/>
+  <g stroke="#33302E" stroke-width="2.2" fill="none" opacity="0.85">
+    <!-- lattice points -->
+    <circle cx="16" cy="16" r="2.4" fill="#33302E" stroke="none"/>
+    <circle cx="32" cy="16" r="2.4" fill="#33302E" stroke="none"/>
+    <circle cx="48" cy="16" r="2.4" fill="#33302E" stroke="none"/>
+    <circle cx="16" cy="32" r="2.4" fill="#33302E" stroke="none"/>
+    <circle cx="48" cy="32" r="2.4" fill="#33302E" stroke="none"/>
+    <circle cx="16" cy="48" r="2.4" fill="#33302E" stroke="none"/>
+    <circle cx="32" cy="48" r="2.4" fill="#33302E" stroke="none"/>
+    <circle cx="48" cy="48" r="2.4" fill="#33302E" stroke="none"/>
+    <!-- lattice edges -->
+    <path d="M16 16 H48 M16 48 H48 M16 16 V48 M48 16 V48 M16 16 L48 48 M48 16 L16 48"/>
+  </g>
+  <!-- central key/lock accent -->
+  <circle cx="32" cy="32" r="7.5" fill="#990F3D"/>
+  <rect x="30.6" y="32" width="2.8" height="7" fill="#990F3D"/>
+</svg>
