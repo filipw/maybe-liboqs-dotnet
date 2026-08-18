@@ -119,7 +119,7 @@ finally
 - **New Features**: Support for context strings in signatures and derandomized (deterministic) operations in KEM.
 - **Type-safe API**: Strong typing with enums for algorithms and proper resource management
 - **Memory management**: Automatic cleanup of native resources using IDisposable pattern
-- **Cross-platform**: Supports Windows x64, Windows ARM64, macOS ARM64, Linux x64, and Linux ARM64
+- **Cross-platform**: Supports Windows x64/ARM64, macOS ARM64, Linux x64/ARM64 (glibc), and Linux x64 musl (Alpine)
 - **Targets**: .NET 10 and .NET 9, so usable from .NET 9.0 or later
 - **Self-contained**: No manual native library installation or compilation required
 
@@ -328,8 +328,9 @@ LibOQS.NET supports the following platforms out of the box with no additional se
 
 - **Windows x64**
 - **Windows ARM64** 
-- **Linux x64**
-- **Linux ARM64**
+- **Linux x64** (glibc)
+- **Linux ARM64** (glibc)
+- **Linux x64 musl** (Alpine)
 - **macOS ARM64**
 
 > [!NOTE]
@@ -345,6 +346,18 @@ The NuGet packages include all necessary native libraries for these platforms.
 This means the algorithm you're trying to use was not enabled when liboqs was compiled. You can:
 1. Check which algorithms are enabled using the `.IsEnabled()` method
 2. Use a different algorithm that is available
+
+### DllNotFoundException / "Error loading shared library liboqs"
+The native library ships per runtime identifier. If loading fails, check that the RID your app
+resolves to has a matching asset in the package. A distinctive case is musl-based distributions
+such as Alpine, where a glibc build fails with a message naming the glibc loader:
+
+```
+Error loading shared library ld-linux-x86-64.so.2: No such file or directory (needed by .../liboqs.so)
+```
+
+That means a `linux-x64` (glibc) asset was picked on a musl system. The package carries a separate
+`linux-musl-x64` asset for this; make sure you are on a version that includes it.
 
 ### General Issues
 If you encounter issues:
