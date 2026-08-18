@@ -120,6 +120,7 @@ finally
 - **Type-safe API**: Strong typing with enums for algorithms and proper resource management
 - **Memory management**: Automatic cleanup of native resources using IDisposable pattern
 - **Cross-platform**: Supports Windows x64, Windows ARM64, macOS ARM64, Linux x64, and Linux ARM64
+- **Targets**: .NET 10 and .NET 8, so usable from .NET 8.0 or later
 - **Self-contained**: No manual native library installation or compilation required
 
 ## Supported Algorithms
@@ -198,7 +199,7 @@ The NuGet packages are self-contained and don't require building from source. Th
 
 ### Prerequisites
 
-- **.NET 9.0 SDK** or later
+- **.NET 10.0 SDK** (pinned by `global.json`)
 - **CMake** 3.5 or later
 - **C/C++ compiler** (Visual Studio Build Tools on Windows, GCC/Clang on Linux/macOS)
 - **Git** with submodule support
@@ -317,7 +318,7 @@ This means the algorithm you're trying to use was not enabled when liboqs was co
 ### General Issues
 If you encounter issues:
 1. Ensure you're using a supported platform (see Platform Support above)
-2. Check that your .NET runtime version is compatible (.NET 9.0 or later)
+2. Check that your .NET runtime version is compatible (.NET 8.0 or later)
 3. Verify the algorithm you're trying to use is enabled with `.IsEnabled()`
 
 ## Contributing
