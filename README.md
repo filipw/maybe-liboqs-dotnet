@@ -119,7 +119,7 @@ finally
 - **New Features**: Support for context strings in signatures and derandomized (deterministic) operations in KEM.
 - **Type-safe API**: Strong typing with enums for algorithms and proper resource management
 - **Memory management**: Automatic cleanup of native resources using IDisposable pattern
-- **Cross-platform**: Supports Windows x64/ARM64, macOS ARM64, and Linux x64/ARM64 on both glibc and musl (Alpine)
+- **Cross-platform**: Supports Windows x64/ARM64, macOS ARM64, Linux x64/ARM64 (glibc), and Linux x64 musl (Alpine)
 - **Targets**: .NET 10 and .NET 9, so usable from .NET 9.0 or later
 - **Self-contained**: No manual native library installation or compilation required
 
@@ -331,7 +331,6 @@ LibOQS.NET supports the following platforms out of the box with no additional se
 - **Linux x64** (glibc)
 - **Linux ARM64** (glibc)
 - **Linux x64 musl** (Alpine)
-- **Linux ARM64 musl** (Alpine)
 - **macOS ARM64**
 
 > [!NOTE]
@@ -357,9 +356,8 @@ such as Alpine, where a glibc build fails with a message naming the glibc loader
 Error loading shared library ld-linux-x86-64.so.2: No such file or directory (needed by .../liboqs.so)
 ```
 
-That means a `linux-x64` (glibc) asset was picked on a musl system. The package carries separate
-`linux-musl-x64` and `linux-musl-arm64` assets for this; make sure you are on a version that
-includes them.
+That means a `linux-x64` (glibc) asset was picked on a musl system. The package carries a separate
+`linux-musl-x64` asset for this; make sure you are on a version that includes it.
 
 ### General Issues
 If you encounter issues:

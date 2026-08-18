@@ -119,12 +119,16 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Build liboqs for linux-musl-x64
+    - name: Build liboqs and run tests on Alpine (musl)
       run: |
         chmod +x build-dotnet-liboqs-linux.sh
-        docker run --rm -v "$PWD:/src" -w /src alpine:3.21 sh -c '
-          apk add --no-cache build-base cmake git bash &&
+        docker run --rm -v "$PWD:/src" -w /src mcr.microsoft.com/dotnet/sdk:10.0-alpine sh -c '
+          set -e
+          apk add --no-cache build-base cmake git bash linux-headers
           ./build-dotnet-liboqs-linux.sh Release ./src/native/runtimes/linux-musl-x64/native
+          # net10.0 only: this job exists to validate the native musl library, and the Alpine
+          # SDK image ships just the .NET 10 runtime.
+          dotnet test -f net10.0 --verbosity normal
         '
 
     - name: Verify the library is musl-linked
@@ -132,7 +136,7 @@ jobs:
         so=src/native/runtimes/linux-musl-x64/native/liboqs.so
         test -f "$so" || { echo "ERROR: $so not found"; exit 1; }
         file "$so"
-        # A musl build must not carry a glibc ELF interpreter or NEEDED entry.
+        # A musl build must not carry a glibc NEEDED entry or ELF interpreter.
         if readelf -d "$so" | grep -qi 'libc\.so\.6'; then
           echo "ERROR: linked against glibc, not musl"; exit 1
         fi
@@ -144,42 +148,6 @@ jobs:
         name: liboqs-linux-musl-x64
         path: |
           src/native/runtimes/linux-musl-x64/native/liboqs.so
-        retention-days: 7
-
-  build-linux-musl-arm64:
-    # Native arm64 runner: emulating an Alpine arm64 build under QEMU is prohibitively slow.
-    runs-on: ubuntu-24.04-arm
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Build liboqs for linux-musl-arm64
-      run: |
-        chmod +x build-dotnet-liboqs-linux.sh
-        docker run --rm -v "$PWD:/src" -w /src alpine:3.21 sh -c '
-          apk add --no-cache build-base cmake git bash &&
-          ./build-dotnet-liboqs-linux.sh Release ./src/native/runtimes/linux-musl-arm64/native
-        '
-
-    - name: Verify the library is musl-linked
-      run: |
-        so=src/native/runtimes/linux-musl-arm64/native/liboqs.so
-        test -f "$so" || { echo "ERROR: $so not found"; exit 1; }
-        file "$so"
-        if readelf -d "$so" | grep -qi 'libc\.so\.6'; then
-          echo "ERROR: linked against glibc, not musl"; exit 1
-        fi
-        echo "OK: no glibc dependency"
-
-    - name: Upload linux-musl-arm64 artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: liboqs-linux-musl-arm64
-        path: |
-          src/native/runtimes/linux-musl-arm64/native/liboqs.so
         retention-days: 7
 
   build-windows-x64:
@@ -293,7 +261,7 @@ jobs:
 
   create-nuget-packages:
     if: github.ref == 'refs/heads/main' && github.event_name != 'release'
-    needs: [build-linux, build-linux-arm64, build-linux-musl-x64, build-linux-musl-arm64, build-windows-x64, build-windows-arm64, build-macos]
+    needs: [build-linux, build-linux-arm64, build-linux-musl-x64, build-windows-x64, build-windows-arm64, build-macos]
     runs-on: ubuntu-latest
     
     steps:
@@ -318,7 +286,6 @@ jobs:
         mkdir -p src/native/runtimes/linux-x64/native
         mkdir -p src/native/runtimes/linux-arm64/native
         mkdir -p src/native/runtimes/linux-musl-x64/native
-        mkdir -p src/native/runtimes/linux-musl-arm64/native
         mkdir -p src/native/runtimes/win-x64/native
         mkdir -p src/native/runtimes/win-arm64/native
         mkdir -p src/native/runtimes/osx/native
@@ -332,9 +299,6 @@ jobs:
         fi
         if [ -d "artifacts/liboqs-linux-musl-x64" ]; then
           cp -r artifacts/liboqs-linux-musl-x64/* src/native/runtimes/linux-musl-x64/native/
-        fi
-        if [ -d "artifacts/liboqs-linux-musl-arm64" ]; then
-          cp -r artifacts/liboqs-linux-musl-arm64/* src/native/runtimes/linux-musl-arm64/native/
         fi
         if [ -d "artifacts/liboqs-windows-x64" ]; then
           cp -r artifacts/liboqs-windows-x64/* src/native/runtimes/win-x64/native/
@@ -383,7 +347,7 @@ jobs:
 
   release:
     if: github.event_name == 'release'
-    needs: [build-linux, build-linux-arm64, build-linux-musl-x64, build-linux-musl-arm64, build-windows-x64, build-windows-arm64, build-macos]
+    needs: [build-linux, build-linux-arm64, build-linux-musl-x64, build-windows-x64, build-windows-arm64, build-macos]
     runs-on: ubuntu-latest
     
     steps:
@@ -408,7 +372,6 @@ jobs:
         mkdir -p src/native/runtimes/linux-x64/native
         mkdir -p src/native/runtimes/linux-arm64/native
         mkdir -p src/native/runtimes/linux-musl-x64/native
-        mkdir -p src/native/runtimes/linux-musl-arm64/native
         mkdir -p src/native/runtimes/win-x64/native
         mkdir -p src/native/runtimes/win-arm64/native
         mkdir -p src/native/runtimes/osx/native
@@ -422,9 +385,6 @@ jobs:
         fi
         if [ -d "artifacts/liboqs-linux-musl-x64" ]; then
           cp -r artifacts/liboqs-linux-musl-x64/* src/native/runtimes/linux-musl-x64/native/
-        fi
-        if [ -d "artifacts/liboqs-linux-musl-arm64" ]; then
-          cp -r artifacts/liboqs-linux-musl-arm64/* src/native/runtimes/linux-musl-arm64/native/
         fi
         if [ -d "artifacts/liboqs-windows-x64" ]; then
           cp -r artifacts/liboqs-windows-x64/* src/native/runtimes/win-x64/native/
