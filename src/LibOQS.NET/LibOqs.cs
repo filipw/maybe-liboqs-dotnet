@@ -23,46 +23,54 @@ public class AlgorithmNotSupportedException : OqsException
 /// </summary>
 public static class LibOqs
 {
-    private static bool _initialized = false;
+    private static volatile bool _initialized;
     private static readonly object _initLock = new object();
 
     /// <summary>
-    /// Static constructor to automatically initialize LibOQS when first accessed
-    /// </summary>
-    static LibOqs()
-    {
-        Initialize();
-    }
-
-    /// <summary>
-    /// Initialize the OQS library. This should be called before using any other OQS functions.
+    /// Initialize the OQS library. Calling this is optional: every entry point that needs the
+    /// native library initializes it on demand. Safe to call repeatedly and from multiple threads.
     /// </summary>
     public static void Initialize()
     {
+        if (_initialized)
+        {
+            return;
+        }
+
         lock (_initLock)
         {
-            if (!_initialized)
+            if (_initialized)
             {
-                try
-                {
-                    Native.Common.OQS_init();
-                    _initialized = true;
-                }
-                catch (DllNotFoundException ex)
-                {
-                    throw new OqsException(
-                        "Unable to load the liboqs shared library. " +
-                        "Please ensure that oqs.dll (Windows), liboqs.so (Linux), or liboqs.dylib (macOS) " +
-                        "is available in your system's library path or in the application directory. " +
-                        "See BUILD.md for installation instructions.", ex);
-                }
+                return;
             }
+
+            try
+            {
+                Native.Common.OQS_init();
+            }
+            catch (Exception ex) when (ex is DllNotFoundException
+                                    || ex is BadImageFormatException
+                                    || ex is EntryPointNotFoundException)
+            {
+                throw new OqsException(
+                    "Unable to load the liboqs native library. Ensure that oqs.dll (Windows), " +
+                    "liboqs.so (Linux) or liboqs.dylib (macOS) built for this process architecture " +
+                    "is present in the application directory or on the platform's library search " +
+                    "path. See the \"Building from Source\" section of README.md.", ex);
+            }
+
+            _initialized = true;
         }
     }
 
     /// <summary>
-    /// Cleanup the OQS library
+    /// Cleanup the OQS library.
     /// </summary>
+    /// <remarks>
+    /// Only call this once every <see cref="KemInstance"/> and <see cref="SigInstance"/> has been
+    /// disposed; liboqs behaviour is undefined if instances outlive <c>OQS_destroy</c>. This is not
+    /// invoked automatically at process exit.
+    /// </remarks>
     public static void Cleanup()
     {
         lock (_initLock)
@@ -83,11 +91,5 @@ public static class LibOqs
     /// <summary>
     /// Ensure the library is initialized, automatically initializing if needed
     /// </summary>
-    public static void EnsureInitialized()
-    {
-        if (!_initialized)
-        {
-            Initialize();
-        }
-    }
+    public static void EnsureInitialized() => Initialize();
 }

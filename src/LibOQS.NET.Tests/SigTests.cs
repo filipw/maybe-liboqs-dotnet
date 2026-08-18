@@ -289,8 +289,8 @@ public class SigTests
         var (publicKey, secretKey) = sig.GenerateKeypair();
         var signature = new byte[100];
 
-        Assert.Throws<NullReferenceException>(() => sig.Sign(null!, secretKey));
-        Assert.Throws<NullReferenceException>(() => sig.Verify(null!, signature, publicKey));
+        Assert.Throws<ArgumentNullException>(() => sig.Sign(null!, secretKey));
+        Assert.Throws<ArgumentNullException>(() => sig.Verify(null!, signature, publicKey));
     }
 
     [Fact]
@@ -301,9 +301,9 @@ public class SigTests
         var signature = new byte[100];
         var publicKey = new byte[sig.PublicKeyLength];
 
-        Assert.Throws<NullReferenceException>(() => sig.Sign(message, null!));
-        Assert.Throws<NullReferenceException>(() => sig.Verify(message, signature, null!));
-        Assert.Throws<NullReferenceException>(() => sig.Verify(message, null!, publicKey));
+        Assert.Throws<ArgumentNullException>(() => sig.Sign(message, null!));
+        Assert.Throws<ArgumentNullException>(() => sig.Verify(message, signature, null!));
+        Assert.Throws<ArgumentNullException>(() => sig.Verify(message, null!, publicKey));
     }
 
     [Fact]
