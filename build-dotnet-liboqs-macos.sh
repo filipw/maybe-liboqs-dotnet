@@ -29,7 +29,10 @@ cd "$BUILD_DIR"
 
 echo "Configuring CMake for shared library build..."
 
-# Configure with shared library options
+# Configure with shared library options.
+# OQS_MEMOPT_BUILD makes MQOM use its memory-optimized implementation. The default MQOM
+# implementation needs more than 1 MB of stack to sign, which overflows the stack of
+# non-main threads (e.g. .NET thread pool threads); the memory-optimized one fits in 512 KB.
 cmake .. \
     -DCMAKE_BUILD_TYPE="$CONFIGURATION" \
     -DBUILD_SHARED_LIBS=ON \
@@ -39,6 +42,7 @@ cmake .. \
     -DOQS_BUILD_ONLY_LIB=ON \
     -DOQS_DIST_BUILD=YES \
     -DOQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON \
+    -DOQS_MEMOPT_BUILD=ON \
     -DOQS_ENABLE_KEM_ML_KEM=ON \
     -DOQS_ENABLE_KEM_KYBER=ON \
     -DOQS_ENABLE_KEM_FRODOKEM=ON \
@@ -53,7 +57,7 @@ cmake .. \
     -DOQS_ENABLE_SIG_MAYO=ON \
     -DOQS_ENABLE_SIG_CROSS=ON \
     -DOQS_ENABLE_SIG_UOV=ON \
-    -DOQS_ENABLE_SIG_MQOM=OFF \
+    -DOQS_ENABLE_SIG_MQOM=ON \
     -DOQS_ENABLE_SIG_SNOVA=ON
 
 echo "Building liboqs..."

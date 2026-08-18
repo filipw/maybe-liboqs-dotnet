@@ -22,8 +22,10 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
-src/native/liboqs.so.0.13.0
 
 bin/
 obj/
-src/native/runtimes/win-arm64/native/oqs.dll
+/src/native/runtimes/*/native/*.dll
+/src/native/runtimes/*/native/*.so
+/src/native/runtimes/*/native/*.dylib
+/src/native/runtimes/*/native/*.pdb

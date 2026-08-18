@@ -36,6 +36,9 @@ try {
             "-DOQS_BUILD_ONLY_LIB=ON"
             "-DOQS_DIST_BUILD=YES"
             "-DOQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON"
+            # MQOM selects its memory-optimized implementation; the default one needs
+            # more than 1 MB of stack to sign, which overflows the default thread stack.
+            "-DOQS_MEMOPT_BUILD=ON"
         )
         
         # Add platform-specific configuration for ARM64
@@ -58,7 +61,7 @@ try {
             "-DOQS_ENABLE_SIG_SLH_DSA=OFF"
             "-DOQS_ENABLE_SIG_SNOVA=ON"
             "-DOQS_ENABLE_SIG_FALCON=ON"
-            "-DOQS_ENABLE_SIG_MQOM=OFF"
+            "-DOQS_ENABLE_SIG_MQOM=ON"
             "-DOQS_ENABLE_SIG_MAYO=ON"
             "-DOQS_ENABLE_SIG_CROSS=ON"
             "-DOQS_ENABLE_SIG_UOV=ON"

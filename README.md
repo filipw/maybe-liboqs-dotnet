@@ -234,6 +234,7 @@ git submodule update
    - Configure and build liboqs as a shared library
    - Copy the resulting DLL/so/dylib to the appropriate directories
    - Enable all common quantum-resistant algorithms (ML-KEM, ML-DSA, SLH-DSA, Kyber, Falcon, FrodoKEM, BIKE, HQC, NTRU, SNOVA, MQOM, etc.)
+   - On Windows and macOS, build MQOM from its memory-optimized implementation (`-DOQS_MEMOPT_BUILD=ON`), see [Platform Support](#platform-support)
 
 2. **Build the .NET libraries:**
 
@@ -256,7 +257,7 @@ git submodule update
 
 ### Submodule Management
 
-This project uses [liboqs 0.16.0-rc1](https://github.com/Open-Quantum-Safe/liboqs/releases/tag/0.16.0-rc1) as a git submodule.
+This project uses [liboqs 0.16.0](https://github.com/Open-Quantum-Safe/liboqs/releases/tag/0.16.0) as a git submodule.
 
 **Update to latest liboqs version:**
 ```bash
@@ -292,9 +293,9 @@ LibOQS.NET supports the following platforms out of the box with no additional se
 - **macOS ARM64**
 
 > [!NOTE]
-> **Platform Limitations**: 
-> - **Windows**: `SLH-DSA` (Pure variants) and `MQOM` are currently disabled due to known bugs in `liboqs` 0.16.0-rc1 that cause a stack overflow during signing on Windows. `BIKE` is also disabled on Windows.
-> - **macOS**: `MQOM` is disabled because its `short` variants overflow the stack during signing in `liboqs` 0.16.0-rc1.
+> **Platform Limitations**:
+> - **Windows**: `SLH-DSA` (Pure variants) is disabled because of a known bug in `liboqs` that causes a stack overflow during signing on Windows. `BIKE` is unavailable because `liboqs` itself does not support it on Windows.
+> - **MQOM** is enabled on all platforms. On Windows and macOS it is built from the memory-optimized implementation introduced in `liboqs` 0.16.0 (`OQS_MEMOPT_BUILD`), because the default implementation needs more than 1 MB of stack to sign and overflows the stack of non-main threads. Linux keeps the default (AVX2-accelerated on x64) implementation, where the larger default thread stack is sufficient.
 
 The NuGet packages include all necessary native libraries for these platforms.
 

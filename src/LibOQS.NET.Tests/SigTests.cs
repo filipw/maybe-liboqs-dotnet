@@ -57,7 +57,9 @@ public class SigTests
     [InlineData(SigAlgorithm.Mqom2Cat1Gf16FastR3)]
     [InlineData(SigAlgorithm.Mqom2Cat1Gf16ShortR3)]
     [InlineData(SigAlgorithm.Mqom2Cat3Gf16FastR3)]
+    [InlineData(SigAlgorithm.Mqom2Cat3Gf16ShortR3)]
     [InlineData(SigAlgorithm.Mqom2Cat5Gf16FastR3)]
+    [InlineData(SigAlgorithm.Mqom2Cat5Gf16ShortR5)]
     public void SigSignVerify_ShouldSucceed(SigAlgorithm algorithm)
     {
         Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
