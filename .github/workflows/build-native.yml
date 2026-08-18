@@ -26,8 +26,9 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
-        include-prerelease: true
+        dotnet-version: |
+          9.0.x
+          10.0.x
     
     - name: Install dependencies
       run: |
@@ -121,8 +122,9 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
-        include-prerelease: true
+        dotnet-version: |
+          9.0.x
+          10.0.x
     
     - name: Set up Visual Studio environment
       uses: microsoft/setup-msbuild@v2
@@ -157,8 +159,9 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
-        include-prerelease: true
+        dotnet-version: |
+          9.0.x
+          10.0.x
     
     - name: Set up Visual Studio environment
       uses: microsoft/setup-msbuild@v2
@@ -193,8 +196,9 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
-        include-prerelease: true
+        dotnet-version: |
+          9.0.x
+          10.0.x
     
     - name: Build liboqs for macOS
       run: |
@@ -227,8 +231,9 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
-        include-prerelease: true
+        dotnet-version: |
+          9.0.x
+          10.0.x
     
     - name: Download all artifacts
       uses: actions/download-artifact@v4
@@ -308,8 +313,9 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
-        include-prerelease: true
+        dotnet-version: |
+          9.0.x
+          10.0.x
     
     - name: Download all artifacts
       uses: actions/download-artifact@v4

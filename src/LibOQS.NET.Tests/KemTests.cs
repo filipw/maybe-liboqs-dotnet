@@ -50,26 +50,31 @@ public class KemTests
     [InlineData(KemAlgorithm.EFrodoKem1344Shake)]
     public void KemEncapsDecaps_ShouldSucceed(KemAlgorithm algorithm)
     {
-        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
-        using var kem = new KemInstance(algorithm);
+        // Some parameter sets need more stack than a default thread provides; see LargeStack.
+        LargeStack.Run(() =>
+        {
+            Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
+            using var kem = new KemInstance(algorithm);
 
-        // Generate keypair
-        var (publicKey, secretKey) = kem.GenerateKeypair();
+            // Generate keypair
+            var (publicKey, secretKey) = kem.GenerateKeypair();
 
-        Assert.Equal(kem.PublicKeyLength, publicKey.Length);
-        Assert.Equal(kem.SecretKeyLength, secretKey.Length);
+            Assert.Equal(kem.PublicKeyLength, publicKey.Length);
+            Assert.Equal(kem.SecretKeyLength, secretKey.Length);
 
-        // Encapsulate
-        var (ciphertext, sharedSecret1) = kem.Encapsulate(publicKey);
+            // Encapsulate
+            var (ciphertext, sharedSecret1) = kem.Encapsulate(publicKey);
 
-        Assert.Equal(kem.CiphertextLength, ciphertext.Length);
-        Assert.Equal(kem.SharedSecretLength, sharedSecret1.Length);
+            Assert.Equal(kem.CiphertextLength, ciphertext.Length);
+            Assert.Equal(kem.SharedSecretLength, sharedSecret1.Length);
 
-        // Decapsulate
-        var sharedSecret2 = kem.Decapsulate(secretKey, ciphertext);
+            // Decapsulate
+            var sharedSecret2 = kem.Decapsulate(secretKey, ciphertext);
 
-        Assert.Equal(kem.SharedSecretLength, sharedSecret2.Length);
-        Assert.Equal(sharedSecret1, sharedSecret2);
+            Assert.Equal(kem.SharedSecretLength, sharedSecret2.Length);
+            Assert.Equal(sharedSecret1, sharedSecret2);
+    
+        });
     }
 
     [Fact]
@@ -196,23 +201,28 @@ public class KemTests
     [InlineData(KemAlgorithm.FrodoKem640Aes)]
     public void KemKeyLengths_ShouldBeConsistent(KemAlgorithm algorithm)
     {
-        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
-        using var kem = new KemInstance(algorithm);
+        // Some parameter sets need more stack than a default thread provides; see LargeStack.
+        LargeStack.Run(() =>
+        {
+            Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
+            using var kem = new KemInstance(algorithm);
 
-        Assert.True(kem.PublicKeyLength > 0);
-        Assert.True(kem.SecretKeyLength > 0);
-        Assert.True(kem.CiphertextLength > 0);
-        Assert.True(kem.SharedSecretLength > 0);
+            Assert.True(kem.PublicKeyLength > 0);
+            Assert.True(kem.SecretKeyLength > 0);
+            Assert.True(kem.CiphertextLength > 0);
+            Assert.True(kem.SharedSecretLength > 0);
 
-        // Generated keys should match reported lengths
-        var (publicKey, secretKey) = kem.GenerateKeypair();
-        Assert.Equal(kem.PublicKeyLength, publicKey.Length);
-        Assert.Equal(kem.SecretKeyLength, secretKey.Length);
+            // Generated keys should match reported lengths
+            var (publicKey, secretKey) = kem.GenerateKeypair();
+            Assert.Equal(kem.PublicKeyLength, publicKey.Length);
+            Assert.Equal(kem.SecretKeyLength, secretKey.Length);
 
-        // Encapsulation should produce correct lengths
-        var (ciphertext, sharedSecret) = kem.Encapsulate(publicKey);
-        Assert.Equal(kem.CiphertextLength, ciphertext.Length);
-        Assert.Equal(kem.SharedSecretLength, sharedSecret.Length);
+            // Encapsulation should produce correct lengths
+            var (ciphertext, sharedSecret) = kem.Encapsulate(publicKey);
+            Assert.Equal(kem.CiphertextLength, ciphertext.Length);
+            Assert.Equal(kem.SharedSecretLength, sharedSecret.Length);
+    
+        });
     }
 
     [SkippableTheory]

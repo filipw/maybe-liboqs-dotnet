@@ -120,6 +120,7 @@ finally
 - **Type-safe API**: Strong typing with enums for algorithms and proper resource management
 - **Memory management**: Automatic cleanup of native resources using IDisposable pattern
 - **Cross-platform**: Supports Windows x64, Windows ARM64, macOS ARM64, Linux x64, and Linux ARM64
+- **Targets**: .NET 10 and .NET 9, so usable from .NET 9.0 or later
 - **Self-contained**: No manual native library installation or compilation required
 
 ## Supported Algorithms
@@ -176,6 +177,37 @@ Native resources are held behind a `SafeHandle`:
 > your threat model, clear the arrays yourself when you are done with them (for example with
 > `CryptographicOperations.ZeroMemory`) and consider pinning them for their lifetime.
 
+## Stack Requirements
+
+Some parameter sets - notably in the SNOVA, Classic McEliece, CROSS and MAYO families - need
+considerably more stack than a default .NET thread provides. This matters because a stack overflow
+is fail-fast in .NET: it terminates the process and cannot be caught.
+
+If you use one of those families and see the process die without an exception, run the work on a
+thread you size yourself:
+
+```csharp
+// 16 MB of reserved address space, not committed memory
+var thread = new Thread(() =>
+{
+    using var sig = new SigInstance(SigAlgorithm.Snova60_10_4);
+    var (publicKey, secretKey) = sig.GenerateKeypair();
+    // ...
+}, 16 * 1024 * 1024);
+
+thread.Start();
+thread.Join();
+```
+
+The exact requirement varies by algorithm, platform and CPU architecture, because liboqs compiles
+a different implementation per architecture. It has not been characterised across all supported
+platforms yet, so no per-algorithm figures are published here.
+
+> [!NOTE]
+> This is also why the package targets .NET 9.0 as its floor: on .NET 8 a non-main thread receives
+> only the 512 KB macOS default, which is too small for several of these algorithms. .NET 9 raised
+> it.
+
 ## Thread Safety
 
 - The on-demand initialization is thread-safe
@@ -198,7 +230,7 @@ The NuGet packages are self-contained and don't require building from source. Th
 
 ### Prerequisites
 
-- **.NET 9.0 SDK** or later
+- **.NET 10.0 SDK** (pinned by `global.json`)
 - **CMake** 3.5 or later
 - **C/C++ compiler** (Visual Studio Build Tools on Windows, GCC/Clang on Linux/macOS)
 - **Git** with submodule support

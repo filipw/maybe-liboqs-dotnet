@@ -62,30 +62,35 @@ public class SigTests
     [InlineData(SigAlgorithm.Mqom2Cat5Gf16ShortR5)]
     public void SigSignVerify_ShouldSucceed(SigAlgorithm algorithm)
     {
-        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
-        using var sig = new SigInstance(algorithm);
+        // Some parameter sets need more stack than a default thread provides; see LargeStack.
+        LargeStack.Run(() =>
+        {
+            Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
+            using var sig = new SigInstance(algorithm);
 
-        // Generate keypair
-        var (publicKey, secretKey) = sig.GenerateKeypair();
+            // Generate keypair
+            var (publicKey, secretKey) = sig.GenerateKeypair();
 
-        Assert.Equal(sig.PublicKeyLength, publicKey.Length);
-        Assert.Equal(sig.SecretKeyLength, secretKey.Length);
+            Assert.Equal(sig.PublicKeyLength, publicKey.Length);
+            Assert.Equal(sig.SecretKeyLength, secretKey.Length);
 
-        // Sign message
-        var message = "Hello, post-quantum world!"u8.ToArray();
-        var signature = sig.Sign(message, secretKey);
+            // Sign message
+            var message = "Hello, post-quantum world!"u8.ToArray();
+            var signature = sig.Sign(message, secretKey);
 
-        Assert.True(signature.Length > 0);
-        Assert.True(signature.Length <= sig.MaxSignatureLength);
+            Assert.True(signature.Length > 0);
+            Assert.True(signature.Length <= sig.MaxSignatureLength);
 
-        // Verify signature
-        var isValid = sig.Verify(message, signature, publicKey);
-        Assert.True(isValid);
+            // Verify signature
+            var isValid = sig.Verify(message, signature, publicKey);
+            Assert.True(isValid);
 
-        // Verify with tampered message should fail
-        var tamperedMessage = "Hello, post-quantum world?"u8.ToArray();
-        var isValidTampered = sig.Verify(tamperedMessage, signature, publicKey);
-        Assert.False(isValidTampered);
+            // Verify with tampered message should fail
+            var tamperedMessage = "Hello, post-quantum world?"u8.ToArray();
+            var isValidTampered = sig.Verify(tamperedMessage, signature, publicKey);
+            Assert.False(isValidTampered);
+    
+        });
     }
 
     [Fact]
@@ -213,18 +218,23 @@ public class SigTests
     [InlineData(SigAlgorithm.UovOvIs)]
     public void SigKeyLengths_ShouldBeConsistent(SigAlgorithm algorithm)
     {
-        Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
-        using var sig = new SigInstance(algorithm);
+        // Some parameter sets need more stack than a default thread provides; see LargeStack.
+        LargeStack.Run(() =>
+        {
+            Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
+            using var sig = new SigInstance(algorithm);
 
-        // Key lengths should be positive
-        Assert.True(sig.PublicKeyLength > 0);
-        Assert.True(sig.SecretKeyLength > 0);
-        Assert.True(sig.MaxSignatureLength > 0);
+            // Key lengths should be positive
+            Assert.True(sig.PublicKeyLength > 0);
+            Assert.True(sig.SecretKeyLength > 0);
+            Assert.True(sig.MaxSignatureLength > 0);
 
-        // Generated keys should match reported lengths
-        var (publicKey, secretKey) = sig.GenerateKeypair();
-        Assert.Equal(sig.PublicKeyLength, publicKey.Length);
-        Assert.Equal(sig.SecretKeyLength, secretKey.Length);
+            // Generated keys should match reported lengths
+            var (publicKey, secretKey) = sig.GenerateKeypair();
+            Assert.Equal(sig.PublicKeyLength, publicKey.Length);
+            Assert.Equal(sig.SecretKeyLength, secretKey.Length);
+    
+        });
     }
 
     [Fact]

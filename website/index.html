@@ -632,6 +632,16 @@ Console.WriteLine($"Secrets equal: {bobSecret.SequenceEqual(aliceSecret)}");</co
           automatically at process exit.
         </p>
         <div class="note">
+          <strong>Stack requirements.</strong> Some parameter sets &mdash; notably in the SNOVA,
+          Classic McEliece, CROSS and MAYO families &mdash; need considerably more stack than a
+          default .NET thread provides, and a stack overflow terminates the process rather than
+          raising a catchable exception. Where that affects you, run the work on a thread you size
+          yourself. The exact requirement varies by algorithm, platform and CPU architecture, and
+          has not been characterised across all supported platforms yet. This is also why the
+          package targets .NET 9.0 as its floor: on .NET 8 a non-main thread receives only the
+          512 KB macOS default.
+        </div>
+        <div class="note">
           <strong>Key material is not erased for you.</strong> Keys and shared secrets are returned
           as ordinary managed <code>byte[]</code>. The garbage collector may move or copy those
           arrays and nothing zeroes them once they fall out of scope, so the library cannot
