@@ -75,10 +75,56 @@ public static class Sig
     public static extern Common.OqsStatus OQS_SIG_verify_with_ctx_str(IntPtr sig, IntPtr message, UIntPtr message_len,
         IntPtr signature, UIntPtr signature_len, IntPtr ctx_str, UIntPtr ctx_str_len, IntPtr public_key);
 
+    // --- Safe-handle overloads -------------------------------------------------------------
+    // These target the same native entry points as the IntPtr declarations above. Prefer them:
+    // the marshaller reference-counts the handle across the call, so the OQS_SIG cannot be freed
+    // while native code is still reading it, and releasing it is idempotent and thread-safe.
+
+    /// <summary>
+    /// Get a signature algorithm by name, as a safe handle
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_SIG_new", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern OqsSigHandle OQS_SIG_new_handle([MarshalAs(UnmanagedType.LPStr)] string method_name);
+
+    /// <summary>
+    /// Generate a keypair
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_SIG_keypair", CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_SIG_keypair(OqsSigHandle sig, IntPtr public_key, IntPtr secret_key);
+
+    /// <summary>
+    /// Sign a message
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_SIG_sign", CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_SIG_sign(OqsSigHandle sig, IntPtr signature, ref UIntPtr signature_len,
+        IntPtr message, UIntPtr message_len, IntPtr secret_key);
+
+    /// <summary>
+    /// Sign a message with a context string
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_SIG_sign_with_ctx_str", CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_SIG_sign_with_ctx_str(OqsSigHandle sig, IntPtr signature, ref UIntPtr signature_len,
+        IntPtr message, UIntPtr message_len, IntPtr ctx_str, UIntPtr ctx_str_len, IntPtr secret_key);
+
+    /// <summary>
+    /// Verify a signature
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_SIG_verify", CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_SIG_verify(OqsSigHandle sig, IntPtr message, UIntPtr message_len,
+        IntPtr signature, UIntPtr signature_len, IntPtr public_key);
+
+    /// <summary>
+    /// Verify a signature with a context string
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_SIG_verify_with_ctx_str", CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_SIG_verify_with_ctx_str(OqsSigHandle sig, IntPtr message, UIntPtr message_len,
+        IntPtr signature, UIntPtr signature_len, IntPtr ctx_str, UIntPtr ctx_str_len, IntPtr public_key);
+
     /// <summary>
     /// Check if a signature algorithm supports context strings
     /// </summary>
     [DllImport(Common.LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    [return: MarshalAs(UnmanagedType.U1)]
     public static extern bool OQS_SIG_supports_ctx_str([MarshalAs(UnmanagedType.LPStr)] string method_name);
 
     /// <summary>

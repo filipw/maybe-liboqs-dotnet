@@ -623,11 +623,21 @@ Console.WriteLine($"Secrets equal: {bobSecret.SequenceEqual(aliceSecret)}");</co
         </p>
         <p>
           Initialisation happens automatically the first time the library is used, and that path
-          is safe to call from multiple threads. For the algorithm instances themselves, the
-          recommendation is to use a separate instance per thread rather than sharing one. An
-          optional <code>LibOqs.Cleanup()</code> call is available for releasing library-wide
-          resources once at application shutdown.
+          is safe to call from multiple threads. Disposal is idempotent and may be called
+          concurrently; an instance that is never disposed is still released by the handle's
+          critical finaliser. For the algorithm instances themselves, the recommendation is to use
+          a separate instance per thread rather than sharing one. An optional
+          <code>LibOqs.Cleanup()</code> call is available for releasing library-wide resources, and
+          should be made only after every instance has been disposed. It is not invoked
+          automatically at process exit.
         </p>
+        <div class="note">
+          <strong>Key material is not erased for you.</strong> Keys and shared secrets are returned
+          as ordinary managed <code>byte[]</code>. The garbage collector may move or copy those
+          arrays and nothing zeroes them once they fall out of scope, so the library cannot
+          guarantee secrets are cleared from process memory. Where that matters, clear the arrays
+          yourself once finished with them.
+        </div>
       </section>
 
       <section id="acknowledgements">

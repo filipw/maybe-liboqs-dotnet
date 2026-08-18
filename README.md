@@ -30,7 +30,7 @@ dotnet add package LibOQS.NET
 ```csharp
 using LibOQS.NET;
 
-// LibOQS initializes automatically - no manual Initialize() call needed
+// LibOQS initializes on first use - no manual Initialize() call needed
 try
 {
     // Key Encapsulation Mechanism example
@@ -64,7 +64,8 @@ try
 }
 finally
 {
-    // Optional cleanup - called automatically at app shutdown
+    // Optional: releases OQS_destroy() state. Only safe once every instance above is disposed,
+    // which the `using` declarations guarantee by the time we get here.
     LibOqs.Cleanup();
 }
 ```
@@ -161,19 +162,26 @@ if (KemAlgorithm.MlKem512.IsEnabled())
 
 ## Memory Management
 
-The library properly manages native resources:
+Native resources are held behind a `SafeHandle`:
 
-- **Automatic initialization**: LibOQS initializes automatically via static constructor
-- **Automatic cleanup**: Use `using` statements with `KemInstance` and `SigInstance`
-- **Optional manual cleanup**: Call `LibOqs.Cleanup()` when completely done with the library
+- **Automatic initialization**: the native library is initialized on demand by the first call that needs it; you never have to call `LibOqs.Initialize()` yourself, though it is public and idempotent
+- **Deterministic release**: wrap `KemInstance` and `SigInstance` in `using` declarations. `Dispose()` is idempotent and safe to call concurrently
+- **Backstop**: an instance that is never disposed is released by the handle's critical finalizer, so the native allocation is not leaked
+- **Optional manual cleanup**: `LibOqs.Cleanup()` calls `OQS_destroy()`. Only call it once every instance has been disposed — liboqs behaviour is undefined if instances outlive it. It is *not* invoked automatically at process exit
+
+> [!IMPORTANT]
+> Key material is returned as ordinary managed `byte[]`. The garbage collector may move or copy
+> those arrays, and nothing zeroes them when they fall out of scope, so the library cannot
+> guarantee that secret keys or shared secrets are erased from process memory. If that matters for
+> your threat model, clear the arrays yourself when you are done with them (for example with
+> `CryptographicOperations.ZeroMemory`) and consider pinning them for their lifetime.
 
 ## Thread Safety
 
-The native liboqs library is generally thread-safe for read operations but may not be thread-safe for initialization. It's recommended to:
-
-- Use separate instances of `KemInstance` and `SigInstance` per thread
-- The automatic initialization is thread-safe
-- Call `LibOqs.Cleanup()` once at application shutdown if needed
+- The on-demand initialization is thread-safe
+- `Dispose()` is thread-safe and idempotent on both `KemInstance` and `SigInstance`, and will not release the native object while another thread still has a call in flight
+- Prefer a separate `KemInstance` / `SigInstance` per thread. The instances hold no mutable managed state, but sharing one across threads is not covered by the test suite
+- Call `LibOqs.Cleanup()` once at application shutdown, if at all, and only after every instance has been disposed
 
 ## Error Handling
 

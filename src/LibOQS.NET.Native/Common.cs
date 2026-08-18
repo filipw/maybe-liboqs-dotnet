@@ -47,10 +47,16 @@ public static class Common
     public static extern IntPtr OQS_MEM_malloc(UIntPtr size);
 
     /// <summary>
-    /// Free memory
+    /// Free memory allocated by liboqs, without zeroing it first
     /// </summary>
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void OQS_MEM_free(IntPtr ptr);
+    public static extern void OQS_MEM_insecure_free(IntPtr ptr);
+
+    /// <summary>
+    /// Free memory allocated by liboqs, without zeroing it first
+    /// </summary>
+    [Obsolete("liboqs exports no OQS_MEM_free symbol, so calling this always threw EntryPointNotFoundException. Use OQS_MEM_insecure_free instead.")]
+    public static void OQS_MEM_free(IntPtr ptr) => OQS_MEM_insecure_free(ptr);
 
     /// <summary>
     /// Secure free memory

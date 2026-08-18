@@ -269,9 +269,9 @@ public static class SigAlgorithmExtensions
 /// </summary>
 public class SigInstance : IDisposable
 {
-    private IntPtr _sigPtr;
-    private Sig.OqsSig _sig;
-    private bool _disposed = false;
+    private readonly OqsSigHandle _handle;
+    private readonly Sig.OqsSig _sig;
+    private bool _disposed;
 
     /// <summary>
     /// Algorithm being used
@@ -296,7 +296,7 @@ public class SigInstance : IDisposable
     /// <summary>
     /// Whether the algorithm supports context strings
     /// </summary>
-    public bool SupportsContextString => Sig.OQS_SIG_supports_ctx_str(Algorithm.GetIdentifier());
+    public bool SupportsContextString => _sig.sig_with_ctx_support != 0;
 
     /// <summary>
     /// Create a new signature instance
@@ -311,13 +311,14 @@ public class SigInstance : IDisposable
             throw new AlgorithmNotSupportedException(algorithm.GetIdentifier());
         }
 
-        _sigPtr = Sig.OQS_SIG_new(algorithm.GetIdentifier());
-        if (_sigPtr == IntPtr.Zero)
+        _handle = Sig.OQS_SIG_new_handle(algorithm.GetIdentifier());
+        if (_handle.IsInvalid)
         {
+            _handle.Dispose();
             throw new OqsException($"Failed to create signature instance for {algorithm}");
         }
 
-        _sig = Marshal.PtrToStructure<Sig.OqsSig>(_sigPtr);
+        _sig = Marshal.PtrToStructure<Sig.OqsSig>(_handle.DangerousGetHandle());
     }
 
     /// <summary>
@@ -345,7 +346,7 @@ public class SigInstance : IDisposable
         {
             fixed (byte* pkPtr = publicKey, skPtr = secretKey)
             {
-                var result = Sig.OQS_SIG_keypair(_sigPtr, (IntPtr)pkPtr, (IntPtr)skPtr);
+                var result = Sig.OQS_SIG_keypair(_handle, (IntPtr)pkPtr, (IntPtr)skPtr);
                 if (result != Common.OqsStatus.Success)
                 {
                     throw new OqsException("Failed to generate keypair");
@@ -357,20 +358,30 @@ public class SigInstance : IDisposable
     }
 
     /// <summary>
-    /// Sign a message
+    /// Sign a message, optionally with a context string
     /// </summary>
     public byte[] Sign(byte[] message, byte[] secretKey, byte[]? ctxStr = null)
     {
         ThrowIfDisposed();
 
+        if (message == null)
+        {
+            throw new ArgumentNullException(nameof(message));
+        }
+
+        if (secretKey == null)
+        {
+            throw new ArgumentNullException(nameof(secretKey));
+        }
+
         if (secretKey.Length != SecretKeyLength)
         {
-            throw new ArgumentException($"Secret key must be {SecretKeyLength} bytes");
+            throw new ArgumentException($"Secret key must be {SecretKeyLength} bytes", nameof(secretKey));
         }
 
         if (ctxStr != null && !SupportsContextString)
         {
-            throw new ArgumentException($"Algorithm {Algorithm} does not support context strings");
+            throw new ArgumentException($"Algorithm {Algorithm} does not support context strings", nameof(ctxStr));
         }
 
         var signature = new byte[MaxSignatureLength];
@@ -385,13 +396,13 @@ public class SigInstance : IDisposable
                 {
                     fixed (byte* ctxPtr = ctxStr)
                     {
-                        result = Sig.OQS_SIG_sign_with_ctx_str(_sigPtr, (IntPtr)sigPtr, ref signatureLength,
+                        result = Sig.OQS_SIG_sign_with_ctx_str(_handle, (IntPtr)sigPtr, ref signatureLength,
                             (IntPtr)msgPtr, (UIntPtr)message.Length, (IntPtr)ctxPtr, (UIntPtr)ctxStr.Length, (IntPtr)skPtr);
                     }
                 }
                 else
                 {
-                    result = Sig.OQS_SIG_sign(_sigPtr, (IntPtr)sigPtr, ref signatureLength,
+                    result = Sig.OQS_SIG_sign(_handle, (IntPtr)sigPtr, ref signatureLength,
                         (IntPtr)msgPtr, (UIntPtr)message.Length, (IntPtr)skPtr);
                 }
 
@@ -402,27 +413,51 @@ public class SigInstance : IDisposable
             }
         }
 
-        // Return only the actual signature length
-        var actualSignature = new byte[(int)signatureLength];
-        Array.Copy(signature, actualSignature, (int)signatureLength);
+        // Signature lengths are variable for some algorithms (e.g. Falcon), so trim the buffer
+        // down to what liboqs actually wrote.
+        if (signatureLength.ToUInt64() > (ulong)MaxSignatureLength)
+        {
+            throw new OqsException(
+                $"liboqs reported a signature length of {signatureLength} bytes, which exceeds the " +
+                $"maximum of {MaxSignatureLength} bytes for {Algorithm}");
+        }
+
+        var actualLength = (int)signatureLength;
+        var actualSignature = new byte[actualLength];
+        Array.Copy(signature, actualSignature, actualLength);
         return actualSignature;
     }
 
     /// <summary>
-    /// Verify a signature
+    /// Verify a signature, optionally with a context string
     /// </summary>
     public bool Verify(byte[] message, byte[] signature, byte[] publicKey, byte[]? ctxStr = null)
     {
         ThrowIfDisposed();
 
+        if (message == null)
+        {
+            throw new ArgumentNullException(nameof(message));
+        }
+
+        if (signature == null)
+        {
+            throw new ArgumentNullException(nameof(signature));
+        }
+
+        if (publicKey == null)
+        {
+            throw new ArgumentNullException(nameof(publicKey));
+        }
+
         if (publicKey.Length != PublicKeyLength)
         {
-            throw new ArgumentException($"Public key must be {PublicKeyLength} bytes");
+            throw new ArgumentException($"Public key must be {PublicKeyLength} bytes", nameof(publicKey));
         }
 
         if (ctxStr != null && !SupportsContextString)
         {
-            throw new ArgumentException($"Algorithm {Algorithm} does not support context strings");
+            throw new ArgumentException($"Algorithm {Algorithm} does not support context strings", nameof(ctxStr));
         }
 
         unsafe
@@ -434,42 +469,29 @@ public class SigInstance : IDisposable
                 {
                     fixed (byte* ctxPtr = ctxStr)
                     {
-                        result = Sig.OQS_SIG_verify_with_ctx_str(_sigPtr, (IntPtr)msgPtr, (UIntPtr)message.Length,
+                        result = Sig.OQS_SIG_verify_with_ctx_str(_handle, (IntPtr)msgPtr, (UIntPtr)message.Length,
                             (IntPtr)sigPtr, (UIntPtr)signature.Length, (IntPtr)ctxPtr, (UIntPtr)ctxStr.Length, (IntPtr)pkPtr);
                     }
                 }
                 else
                 {
-                    result = Sig.OQS_SIG_verify(_sigPtr, (IntPtr)msgPtr, (UIntPtr)message.Length,
+                    result = Sig.OQS_SIG_verify(_handle, (IntPtr)msgPtr, (UIntPtr)message.Length,
                         (IntPtr)sigPtr, (UIntPtr)signature.Length, (IntPtr)pkPtr);
                 }
+
                 return result == Common.OqsStatus.Success;
             }
         }
     }
 
     /// <summary>
-    /// Dispose of the signature instance
+    /// Release the native signature instance. Idempotent and safe to call from multiple threads.
     /// </summary>
     public void Dispose()
     {
-        if (!_disposed)
-        {
-            if (_sigPtr != IntPtr.Zero)
-            {
-                Sig.OQS_SIG_free(_sigPtr);
-                _sigPtr = IntPtr.Zero;
-            }
-            _disposed = true;
-        }
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Finalizer
-    /// </summary>
-    ~SigInstance()
-    {
-        Dispose();
+        _disposed = true;
+        // SafeHandle.Dispose is itself idempotent and thread-safe, and waits for any in-flight
+        // P/Invoke that holds a reference to the handle.
+        _handle.Dispose();
     }
 }

@@ -271,9 +271,9 @@ public class KemTests
         var (publicKey, secretKey) = kem.GenerateKeypair();
         var (ciphertext, _) = kem.Encapsulate(publicKey);
 
-        Assert.Throws<NullReferenceException>(() => kem.Encapsulate(null!));
-        Assert.Throws<NullReferenceException>(() => kem.Decapsulate(null!, ciphertext));
-        Assert.Throws<NullReferenceException>(() => kem.Decapsulate(secretKey, null!));
+        Assert.Throws<ArgumentNullException>(() => kem.Encapsulate(null!));
+        Assert.Throws<ArgumentNullException>(() => kem.Decapsulate(null!, ciphertext));
+        Assert.Throws<ArgumentNullException>(() => kem.Decapsulate(secretKey, null!));
     }
 
     [Fact]

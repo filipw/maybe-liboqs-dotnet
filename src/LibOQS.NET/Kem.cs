@@ -161,9 +161,9 @@ public static class KemAlgorithmExtensions
 /// </summary>
 public class KemInstance : IDisposable
 {
-    private IntPtr _kemPtr;
-    private Kem.OqsKem _kem;
-    private bool _disposed = false;
+    private readonly OqsKemHandle _handle;
+    private readonly Kem.OqsKem _kem;
+    private bool _disposed;
 
     /// <summary>
     /// Algorithm being used
@@ -191,14 +191,26 @@ public class KemInstance : IDisposable
     public int SharedSecretLength => (int)_kem.length_shared_secret;
 
     /// <summary>
-    /// Length of seeds for derandomized keypair generation in bytes
+    /// Length of seeds for derandomized keypair generation in bytes, or 0 if the algorithm does
+    /// not support derandomized keypair generation
     /// </summary>
     public int KeypairSeedLength => (int)_kem.length_keypair_seed;
 
     /// <summary>
-    /// Length of seeds for derandomized encapsulation in bytes
+    /// Length of seeds for derandomized encapsulation in bytes, or 0 if the algorithm does not
+    /// support derandomized encapsulation
     /// </summary>
     public int EncapsSeedLength => (int)_kem.length_encaps_seed;
+
+    /// <summary>
+    /// Whether the algorithm supports derandomized (deterministic) keypair generation
+    /// </summary>
+    public bool SupportsDerandomizedKeypair => KeypairSeedLength > 0;
+
+    /// <summary>
+    /// Whether the algorithm supports derandomized (deterministic) encapsulation
+    /// </summary>
+    public bool SupportsDerandomizedEncapsulation => EncapsSeedLength > 0;
 
     /// <summary>
     /// Create a new KEM instance
@@ -213,13 +225,14 @@ public class KemInstance : IDisposable
             throw new AlgorithmNotSupportedException(algorithm.GetIdentifier());
         }
 
-        _kemPtr = Kem.OQS_KEM_new(algorithm.GetIdentifier());
-        if (_kemPtr == IntPtr.Zero)
+        _handle = Kem.OQS_KEM_new_handle(algorithm.GetIdentifier());
+        if (_handle.IsInvalid)
         {
+            _handle.Dispose();
             throw new OqsException($"Failed to create KEM instance for {algorithm}");
         }
 
-        _kem = Marshal.PtrToStructure<Kem.OqsKem>(_kemPtr);
+        _kem = Marshal.PtrToStructure<Kem.OqsKem>(_handle.DangerousGetHandle());
     }
 
     /// <summary>
@@ -234,15 +247,24 @@ public class KemInstance : IDisposable
     }
 
     /// <summary>
-    /// Generate a new keypair
+    /// Generate a new keypair, optionally derandomized from <paramref name="seed"/>
     /// </summary>
     public (byte[] PublicKey, byte[] SecretKey) GenerateKeypair(byte[]? seed = null)
     {
         ThrowIfDisposed();
 
-        if (seed != null && seed.Length != KeypairSeedLength)
+        if (seed != null)
         {
-            throw new ArgumentException($"Seed must be {KeypairSeedLength} bytes");
+            if (!SupportsDerandomizedKeypair)
+            {
+                throw new ArgumentException(
+                    $"Algorithm {Algorithm} does not support derandomized keypair generation", nameof(seed));
+            }
+
+            if (seed.Length != KeypairSeedLength)
+            {
+                throw new ArgumentException($"Seed must be {KeypairSeedLength} bytes", nameof(seed));
+            }
         }
 
         var publicKey = new byte[PublicKeyLength];
@@ -257,12 +279,12 @@ public class KemInstance : IDisposable
                 {
                     fixed (byte* seedPtr = seed)
                     {
-                        result = Kem.OQS_KEM_keypair_derand(_kemPtr, (IntPtr)pkPtr, (IntPtr)skPtr, (IntPtr)seedPtr);
+                        result = Kem.OQS_KEM_keypair_derand(_handle, (IntPtr)pkPtr, (IntPtr)skPtr, (IntPtr)seedPtr);
                     }
                 }
                 else
                 {
-                    result = Kem.OQS_KEM_keypair(_kemPtr, (IntPtr)pkPtr, (IntPtr)skPtr);
+                    result = Kem.OQS_KEM_keypair(_handle, (IntPtr)pkPtr, (IntPtr)skPtr);
                 }
 
                 if (result != Common.OqsStatus.Success)
@@ -276,20 +298,35 @@ public class KemInstance : IDisposable
     }
 
     /// <summary>
-    /// Encapsulate a shared secret using the public key
+    /// Encapsulate a shared secret using the public key, optionally derandomized from
+    /// <paramref name="seed"/>
     /// </summary>
     public (byte[] Ciphertext, byte[] SharedSecret) Encapsulate(byte[] publicKey, byte[]? seed = null)
     {
         ThrowIfDisposed();
 
-        if (publicKey.Length != PublicKeyLength)
+        if (publicKey == null)
         {
-            throw new ArgumentException($"Public key must be {PublicKeyLength} bytes");
+            throw new ArgumentNullException(nameof(publicKey));
         }
 
-        if (seed != null && seed.Length != EncapsSeedLength)
+        if (publicKey.Length != PublicKeyLength)
         {
-            throw new ArgumentException($"Seed must be {EncapsSeedLength} bytes");
+            throw new ArgumentException($"Public key must be {PublicKeyLength} bytes", nameof(publicKey));
+        }
+
+        if (seed != null)
+        {
+            if (!SupportsDerandomizedEncapsulation)
+            {
+                throw new ArgumentException(
+                    $"Algorithm {Algorithm} does not support derandomized encapsulation", nameof(seed));
+            }
+
+            if (seed.Length != EncapsSeedLength)
+            {
+                throw new ArgumentException($"Seed must be {EncapsSeedLength} bytes", nameof(seed));
+            }
         }
 
         var ciphertext = new byte[CiphertextLength];
@@ -304,12 +341,12 @@ public class KemInstance : IDisposable
                 {
                     fixed (byte* seedPtr = seed)
                     {
-                        result = Kem.OQS_KEM_encaps_derand(_kemPtr, (IntPtr)ctPtr, (IntPtr)ssPtr, (IntPtr)pkPtr, (IntPtr)seedPtr);
+                        result = Kem.OQS_KEM_encaps_derand(_handle, (IntPtr)ctPtr, (IntPtr)ssPtr, (IntPtr)pkPtr, (IntPtr)seedPtr);
                     }
                 }
                 else
                 {
-                    result = Kem.OQS_KEM_encaps(_kemPtr, (IntPtr)ctPtr, (IntPtr)ssPtr, (IntPtr)pkPtr);
+                    result = Kem.OQS_KEM_encaps(_handle, (IntPtr)ctPtr, (IntPtr)ssPtr, (IntPtr)pkPtr);
                 }
 
                 if (result != Common.OqsStatus.Success)
@@ -329,14 +366,24 @@ public class KemInstance : IDisposable
     {
         ThrowIfDisposed();
 
+        if (secretKey == null)
+        {
+            throw new ArgumentNullException(nameof(secretKey));
+        }
+
+        if (ciphertext == null)
+        {
+            throw new ArgumentNullException(nameof(ciphertext));
+        }
+
         if (secretKey.Length != SecretKeyLength)
         {
-            throw new ArgumentException($"Secret key must be {SecretKeyLength} bytes");
+            throw new ArgumentException($"Secret key must be {SecretKeyLength} bytes", nameof(secretKey));
         }
 
         if (ciphertext.Length != CiphertextLength)
         {
-            throw new ArgumentException($"Ciphertext must be {CiphertextLength} bytes");
+            throw new ArgumentException($"Ciphertext must be {CiphertextLength} bytes", nameof(ciphertext));
         }
 
         var sharedSecret = new byte[SharedSecretLength];
@@ -345,7 +392,7 @@ public class KemInstance : IDisposable
         {
             fixed (byte* skPtr = secretKey, ctPtr = ciphertext, ssPtr = sharedSecret)
             {
-                var result = Kem.OQS_KEM_decaps(_kemPtr, (IntPtr)ssPtr, (IntPtr)ctPtr, (IntPtr)skPtr);
+                var result = Kem.OQS_KEM_decaps(_handle, (IntPtr)ssPtr, (IntPtr)ctPtr, (IntPtr)skPtr);
                 if (result != Common.OqsStatus.Success)
                 {
                     throw new OqsException("Failed to decapsulate");
@@ -357,27 +404,13 @@ public class KemInstance : IDisposable
     }
 
     /// <summary>
-    /// Dispose of the KEM instance
+    /// Release the native KEM instance. Idempotent and safe to call from multiple threads.
     /// </summary>
     public void Dispose()
     {
-        if (!_disposed)
-        {
-            if (_kemPtr != IntPtr.Zero)
-            {
-                Kem.OQS_KEM_free(_kemPtr);
-                _kemPtr = IntPtr.Zero;
-            }
-            _disposed = true;
-        }
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Finalizer
-    /// </summary>
-    ~KemInstance()
-    {
-        Dispose();
+        _disposed = true;
+        // SafeHandle.Dispose is itself idempotent and thread-safe, and waits for any in-flight
+        // P/Invoke that holds a reference to the handle.
+        _handle.Dispose();
     }
 }

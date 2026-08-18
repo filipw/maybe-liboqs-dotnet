@@ -72,6 +72,47 @@ public static class Kem
     [DllImport(Common.LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern Common.OqsStatus OQS_KEM_decaps(IntPtr kem, IntPtr shared_secret, IntPtr ciphertext, IntPtr secret_key);
 
+    // --- Safe-handle overloads -------------------------------------------------------------
+    // These target the same native entry points as the IntPtr declarations above. Prefer them:
+    // the marshaller reference-counts the handle across the call, so the OQS_KEM cannot be freed
+    // while native code is still reading it, and releasing it is idempotent and thread-safe.
+
+    /// <summary>
+    /// Get a KEM by name, as a safe handle
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_KEM_new", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern OqsKemHandle OQS_KEM_new_handle([MarshalAs(UnmanagedType.LPStr)] string method_name);
+
+    /// <summary>
+    /// Generate a keypair
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_KEM_keypair", CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_KEM_keypair(OqsKemHandle kem, IntPtr public_key, IntPtr secret_key);
+
+    /// <summary>
+    /// Generate a keypair with a seed (derandomized)
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_KEM_keypair_derand", CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_KEM_keypair_derand(OqsKemHandle kem, IntPtr public_key, IntPtr secret_key, IntPtr seed);
+
+    /// <summary>
+    /// Encapsulate
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_KEM_encaps", CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_KEM_encaps(OqsKemHandle kem, IntPtr ciphertext, IntPtr shared_secret, IntPtr public_key);
+
+    /// <summary>
+    /// Encapsulate with a seed (derandomized)
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_KEM_encaps_derand", CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_KEM_encaps_derand(OqsKemHandle kem, IntPtr ciphertext, IntPtr shared_secret, IntPtr public_key, IntPtr seed);
+
+    /// <summary>
+    /// Decapsulate
+    /// </summary>
+    [DllImport(Common.LibraryName, EntryPoint = "OQS_KEM_decaps", CallingConvention = CallingConvention.Cdecl)]
+    public static extern Common.OqsStatus OQS_KEM_decaps(OqsKemHandle kem, IntPtr shared_secret, IntPtr ciphertext, IntPtr secret_key);
+
     /// <summary>
     /// Check if a KEM algorithm is enabled
     /// </summary>
