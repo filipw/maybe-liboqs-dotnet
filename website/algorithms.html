@@ -70,7 +70,7 @@
           claimed for each.
         </p>
         <div class="masthead__meta">
-          <span><strong>Source</strong> liboqs 0.16.0-rc1</span>
+          <span><strong>Source</strong> liboqs 0.16.0</span>
           <span><a href="index.html">Return to the overview</a></span>
         </div>
       </div>
@@ -286,7 +286,7 @@
           </table>
         </div>
         <div class="note">
-          The pure SLH-DSA variants are disabled on Windows in the bundled liboqs 0.16.0-rc1
+          The pure SLH-DSA variants are disabled on Windows in the bundled liboqs 0.16.0
           release, as noted on the overview page. They are available on Linux and macOS.
         </div>
       </section>
@@ -357,8 +357,9 @@
         <p>
           SNOVA is exposed across twelve parameter sets spanning the three security levels. MQOM
           is exposed across twelve parameter sets, in GF(16) fast and short trade-offs at each
-          level. As noted on the overview page, the MQOM family is disabled on Windows in the
-          bundled release and is available on Linux and macOS.
+          level, and is available on every supported platform. As noted on the overview page, the
+          Windows and macOS builds use the memory-optimised MQOM implementation added in liboqs
+          0.16.0.
         </p>
         <div class="table-wrap">
           <table>

@@ -73,7 +73,7 @@
           native library bundled so that no separate compilation step is required.
         </p>
         <div class="masthead__meta">
-          <span><strong>Wraps</strong> liboqs 0.16.0-rc1</span>
+          <span><strong>Wraps</strong> liboqs 0.16.0</span>
           <span><strong>Runtime</strong> .NET 9.0 or later</span>
           <span><strong>Licence</strong> MIT</span>
           <span><strong>Platforms</strong> Windows, Linux, macOS</span>
@@ -598,10 +598,17 @@ Console.WriteLine($"Secrets equal: {bobSecret.SequenceEqual(aliceSecret)}");</co
           <li>macOS ARM64</li>
         </ul>
         <div class="note">
-          <strong>Known limitations on Windows.</strong> With liboqs 0.16.0-rc1, the pure
-          SLH-DSA variants and the MQOM family are disabled on Windows because a defect in that
-          release causes a stack overflow during signing. BIKE is also disabled on Windows. These
-          algorithms remain available on the other supported platforms.
+          <strong>Known limitations on Windows.</strong> The pure SLH-DSA variants are disabled on
+          Windows because a defect in liboqs causes a stack overflow during signing. BIKE is
+          unavailable because liboqs itself does not support it on Windows. Both remain available
+          on the other supported platforms.
+        </div>
+        <div class="note">
+          <strong>MQOM.</strong> The MQOM family is available on every supported platform. On
+          Windows and macOS it is built from the memory-optimised implementation introduced in
+          liboqs 0.16.0, because the default implementation requires more than 1 MB of stack to
+          sign and so overflows the stack of non-main threads. On Linux the default implementation
+          is used, which is AVX2-accelerated on x64.
         </div>
       </section>
 

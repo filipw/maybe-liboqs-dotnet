@@ -309,6 +309,9 @@ public static class LibOqsDemo
                 _ when sigAlg.ToString().Contains("OvIs") || sigAlg.ToString().Contains("OvIp") => "Level 1",
                 _ when sigAlg.ToString().Contains("OvIii") => "Level 3",
                 _ when sigAlg.ToString().Contains("OvV") => "Level 5",
+                _ when sigAlg.ToString().Contains("Cat1") => "Level 1",
+                _ when sigAlg.ToString().Contains("Cat3") => "Level 3",
+                _ when sigAlg.ToString().Contains("Cat5") => "Level 5",
                 _ => "Various"
             };
 
