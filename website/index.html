@@ -74,7 +74,7 @@
         </p>
         <div class="masthead__meta">
           <span><strong>Wraps</strong> liboqs 0.16.0</span>
-          <span><strong>Runtime</strong> .NET 8.0 or later</span>
+          <span><strong>Runtime</strong> .NET 9.0 or later</span>
           <span><strong>Licence</strong> MIT</span>
           <span><strong>Platforms</strong> Windows, Linux, macOS</span>
         </div>
@@ -631,6 +631,16 @@ Console.WriteLine($"Secrets equal: {bobSecret.SequenceEqual(aliceSecret)}");</co
           should be made only after every instance has been disposed. It is not invoked
           automatically at process exit.
         </p>
+        <div class="note">
+          <strong>Stack requirements.</strong> Some parameter sets &mdash; notably in the SNOVA,
+          Classic McEliece, CROSS and MAYO families &mdash; need considerably more stack than a
+          default .NET thread provides, and a stack overflow terminates the process rather than
+          raising a catchable exception. Where that affects you, run the work on a thread you size
+          yourself. The exact requirement varies by algorithm, platform and CPU architecture, and
+          has not been characterised across all supported platforms yet. This is also why the
+          package targets .NET 9.0 as its floor: on .NET 8 a non-main thread receives only the
+          512 KB macOS default.
+        </div>
         <div class="note">
           <strong>Key material is not erased for you.</strong> Keys and shared secrets are returned
           as ordinary managed <code>byte[]</code>. The garbage collector may move or copy those

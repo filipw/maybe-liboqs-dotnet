@@ -120,7 +120,7 @@ finally
 - **Type-safe API**: Strong typing with enums for algorithms and proper resource management
 - **Memory management**: Automatic cleanup of native resources using IDisposable pattern
 - **Cross-platform**: Supports Windows x64, Windows ARM64, macOS ARM64, Linux x64, and Linux ARM64
-- **Targets**: .NET 10 and .NET 8, so usable from .NET 8.0 or later
+- **Targets**: .NET 10 and .NET 9, so usable from .NET 9.0 or later
 - **Self-contained**: No manual native library installation or compilation required
 
 ## Supported Algorithms
@@ -176,6 +176,37 @@ Native resources are held behind a `SafeHandle`:
 > guarantee that secret keys or shared secrets are erased from process memory. If that matters for
 > your threat model, clear the arrays yourself when you are done with them (for example with
 > `CryptographicOperations.ZeroMemory`) and consider pinning them for their lifetime.
+
+## Stack Requirements
+
+Some parameter sets - notably in the SNOVA, Classic McEliece, CROSS and MAYO families - need
+considerably more stack than a default .NET thread provides. This matters because a stack overflow
+is fail-fast in .NET: it terminates the process and cannot be caught.
+
+If you use one of those families and see the process die without an exception, run the work on a
+thread you size yourself:
+
+```csharp
+// 16 MB of reserved address space, not committed memory
+var thread = new Thread(() =>
+{
+    using var sig = new SigInstance(SigAlgorithm.Snova60_10_4);
+    var (publicKey, secretKey) = sig.GenerateKeypair();
+    // ...
+}, 16 * 1024 * 1024);
+
+thread.Start();
+thread.Join();
+```
+
+The exact requirement varies by algorithm, platform and CPU architecture, because liboqs compiles
+a different implementation per architecture. It has not been characterised across all supported
+platforms yet, so no per-algorithm figures are published here.
+
+> [!NOTE]
+> This is also why the package targets .NET 9.0 as its floor: on .NET 8 a non-main thread receives
+> only the 512 KB macOS default, which is too small for several of these algorithms. .NET 9 raised
+> it.
 
 ## Thread Safety
 
@@ -318,7 +349,7 @@ This means the algorithm you're trying to use was not enabled when liboqs was co
 ### General Issues
 If you encounter issues:
 1. Ensure you're using a supported platform (see Platform Support above)
-2. Check that your .NET runtime version is compatible (.NET 8.0 or later)
+2. Check that your .NET runtime version is compatible (.NET 9.0 or later)
 3. Verify the algorithm you're trying to use is enabled with `.IsEnabled()`
 
 ## Contributing
