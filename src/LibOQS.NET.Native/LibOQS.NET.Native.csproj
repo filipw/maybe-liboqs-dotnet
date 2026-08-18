@@ -24,6 +24,8 @@
     <Content Include="../native/runtimes/win-arm64/native/oqs.dll" Condition="Exists('../native/runtimes/win-arm64/native/oqs.dll')" Pack="true" PackagePath="runtimes/win-arm64/native/oqs.dll" />
     <Content Include="../native/runtimes/linux-x64/native/liboqs.so" Condition="Exists('../native/runtimes/linux-x64/native/liboqs.so')" Pack="true" PackagePath="runtimes/linux-x64/native/liboqs.so" />
     <Content Include="../native/runtimes/linux-arm64/native/liboqs.so" Condition="Exists('../native/runtimes/linux-arm64/native/liboqs.so')" Pack="true" PackagePath="runtimes/linux-arm64/native/liboqs.so" />
+    <Content Include="../native/runtimes/linux-musl-x64/native/liboqs.so" Condition="Exists('../native/runtimes/linux-musl-x64/native/liboqs.so')" Pack="true" PackagePath="runtimes/linux-musl-x64/native/liboqs.so" />
+    <Content Include="../native/runtimes/linux-musl-arm64/native/liboqs.so" Condition="Exists('../native/runtimes/linux-musl-arm64/native/liboqs.so')" Pack="true" PackagePath="runtimes/linux-musl-arm64/native/liboqs.so" />
     <Content Include="../native/runtimes/osx/native/liboqs.dylib" Condition="Exists('../native/runtimes/osx/native/liboqs.dylib')" Pack="true" PackagePath="runtimes/osx/native/liboqs.dylib" />
 
     <!-- Copy to output directory for local development and testing -->
