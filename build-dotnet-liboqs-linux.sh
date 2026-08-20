@@ -37,6 +37,16 @@ CMAKE_ARGS="$CMAKE_ARGS -DOQS_USE_OPENSSL=OFF"
 CMAKE_ARGS="$CMAKE_ARGS -DOQS_BUILD_ONLY_LIB=ON"
 CMAKE_ARGS="$CMAKE_ARGS -DOQS_DIST_BUILD=YES"
 CMAKE_ARGS="$CMAKE_ARGS -DOQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON"
+
+# On musl (Alpine), .NET gives non-main threads about 1.5 MB, versus about 8 MB on glibc where
+# the ulimit is inherited. That is not enough for the default MQOM implementation, whose "short"
+# parameter sets need more than 1 MB to sign. Build the memory-optimized implementation there,
+# for the same reason the Windows and macOS builds do. glibc keeps the default (AVX2-accelerated
+# on x64) implementation, which is faster and fits comfortably in its larger stacks.
+if (ldd --version 2>&1 | grep -qi musl) || [ -e /lib/ld-musl-x86_64.so.1 ] || [ -e /lib/ld-musl-aarch64.so.1 ]; then
+    echo "musl libc detected: enabling OQS_MEMOPT_BUILD"
+    CMAKE_ARGS="$CMAKE_ARGS -DOQS_MEMOPT_BUILD=ON"
+fi
 CMAKE_ARGS="$CMAKE_ARGS -DOQS_ENABLE_KEM_ML_KEM=ON"
 CMAKE_ARGS="$CMAKE_ARGS -DOQS_ENABLE_KEM_KYBER=ON"
 CMAKE_ARGS="$CMAKE_ARGS -DOQS_ENABLE_KEM_FRODOKEM=ON"
