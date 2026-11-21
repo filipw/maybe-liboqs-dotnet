@@ -96,9 +96,9 @@ try {
             Copy-Item $dllPath.FullName -Destination $targetPath -Force
             Write-Host "Successfully copied oqs.dll to $targetPath" -ForegroundColor Green
         } else {
-            Write-Host "Warning: Could not find oqs.dll in build output" -ForegroundColor Yellow
             Write-Host "Build contents:" -ForegroundColor Yellow
-            Get-ChildItem -Recurse | Format-Table Name, FullName -AutoSize
+            Get-ChildItem -Recurse -Include *.dll, *.lib | Format-Table Name, FullName -AutoSize
+            throw "Could not find oqs.dll in build output"
         }
         
     } finally {

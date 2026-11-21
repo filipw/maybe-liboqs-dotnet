@@ -74,7 +74,7 @@
         </p>
         <div class="masthead__meta">
           <span><strong>Wraps</strong> liboqs 0.16.0</span>
-          <span><strong>Runtime</strong> .NET 9.0 or later</span>
+          <span><strong>Runtime</strong> .NET 10.0 or later</span>
           <span><strong>Licence</strong> MIT</span>
           <span><strong>Platforms</strong> Windows, Linux, macOS</span>
         </div>
@@ -596,7 +596,7 @@ Console.WriteLine($"Secrets equal: {bobSecret.SequenceEqual(aliceSecret)}");</co
           <li>Windows x64 and Windows ARM64</li>
           <li>Linux x64 and Linux ARM64 (glibc)</li>
           <li>Linux x64 (musl, e.g. Alpine)</li>
-          <li>macOS ARM64</li>
+          <li>macOS ARM64 (macOS 14 or later)</li>
         </ul>
         <div class="note">
           <strong>Known limitations on Windows.</strong> The pure SLH-DSA variants are disabled on
@@ -639,8 +639,8 @@ Console.WriteLine($"Secrets equal: {bobSecret.SequenceEqual(aliceSecret)}");</co
           raising a catchable exception. Where that affects you, run the work on a thread you size
           yourself. The exact requirement varies by algorithm, platform and CPU architecture, and
           has not been characterised across all supported platforms yet. This is also why the
-          package targets .NET 9.0 as its floor: on .NET 8 a non-main thread receives only the
-          512 KB macOS default.
+          package has never supported .NET 8 or earlier: there a non-main thread receives only
+          the 512 KB macOS default.
         </div>
         <div class="note">
           <strong>Key material is not erased for you.</strong> Keys and shared secrets are returned

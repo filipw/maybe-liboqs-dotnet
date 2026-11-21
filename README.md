@@ -120,7 +120,7 @@ finally
 - **Type-safe API**: Strong typing with enums for algorithms and proper resource management
 - **Memory management**: Automatic cleanup of native resources using IDisposable pattern
 - **Cross-platform**: Supports Windows x64/ARM64, macOS ARM64, Linux x64/ARM64 (glibc), and Linux x64 musl (Alpine)
-- **Targets**: .NET 10 and .NET 9, so usable from .NET 9.0 or later
+- **Targets**: .NET 11 and .NET 10, so usable from .NET 10.0 or later
 - **Self-contained**: No manual native library installation or compilation required
 
 ## Supported Algorithms
@@ -204,9 +204,9 @@ a different implementation per architecture. It has not been characterised acros
 platforms yet, so no per-algorithm figures are published here.
 
 > [!NOTE]
-> This is also why the package targets .NET 9.0 as its floor: on .NET 8 a non-main thread receives
-> only the 512 KB macOS default, which is too small for several of these algorithms. .NET 9 raised
-> it.
+> This is also why the package has never supported .NET 8 or earlier: there a non-main thread
+> receives only the 512 KB macOS default, which is too small for several of these algorithms.
+> .NET 9 raised it.
 
 ## Thread Safety
 
@@ -230,7 +230,7 @@ The NuGet packages are self-contained and don't require building from source. Th
 
 ### Prerequisites
 
-- **.NET 10.0 SDK** (pinned by `global.json`)
+- **.NET 11.0 SDK** (pinned by `global.json`)
 - **CMake** 3.5 or later
 - **C/C++ compiler** (Visual Studio Build Tools on Windows, GCC/Clang on Linux/macOS)
 - **Git** with submodule support
@@ -291,7 +291,7 @@ git submodule update
 4. **Run examples:**
 
    ```bash
-   cd src/Examples
+   cd samples/Examples
    dotnet run
    ```
 
@@ -331,7 +331,7 @@ LibOQS.NET supports the following platforms out of the box with no additional se
 - **Linux x64** (glibc)
 - **Linux ARM64** (glibc)
 - **Linux x64 musl** (Alpine)
-- **macOS ARM64**
+- **macOS ARM64** (macOS 14 or later)
 
 > [!NOTE]
 > **Platform Limitations**:
@@ -362,7 +362,7 @@ That means a `linux-x64` (glibc) asset was picked on a musl system. The package 
 ### General Issues
 If you encounter issues:
 1. Ensure you're using a supported platform (see Platform Support above)
-2. Check that your .NET runtime version is compatible (.NET 9.0 or later)
+2. Check that your .NET runtime version is compatible (.NET 10.0 or later)
 3. Verify the algorithm you're trying to use is enabled with `.IsEnabled()`
 
 ## Contributing
@@ -384,9 +384,9 @@ When working with submodules:
 
 ## License
 
-LibOQS.NET is licensed under the MIT license.
+LibOQS.NET is licensed under the [MIT license](LICENSE).
 
-The included liboqs library is covered by its own [license](https://github.com/open-quantum-safe/liboqs/blob/main/LICENSE.txt).
+The included liboqs library is covered by its own [license](https://github.com/open-quantum-safe/liboqs/blob/main/LICENSE.txt), a copy of which ships in the `LibOQS.NET.Native` package under `licenses/liboqs/`.
 
 ## Acknowledgments
 

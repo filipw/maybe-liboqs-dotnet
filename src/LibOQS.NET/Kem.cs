@@ -409,8 +409,9 @@ public class KemInstance : IDisposable
     public void Dispose()
     {
         _disposed = true;
-        // SafeHandle.Dispose is itself idempotent and thread-safe, and waits for any in-flight
-        // P/Invoke that holds a reference to the handle.
+        // SafeHandle.Dispose is itself idempotent and thread-safe. It does not block: if a P/Invoke
+        // on another thread still holds a reference to the handle, the native object is released
+        // when that call returns rather than underneath it.
         _handle.Dispose();
     }
 }

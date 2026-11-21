@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using LibOQS.NET;
 using Xunit;
 
@@ -116,6 +117,70 @@ public class InteropSafetyTests
         var encapsEx = Assert.Throws<ArgumentException>(
             () => kem.Encapsulate(publicKey, Array.Empty<byte>()));
         Assert.Equal("seed", encapsEx.ParamName);
+    }
+
+    public static IEnumerable<object[]> AllSigAlgorithms() =>
+        Enum.GetValues<SigAlgorithm>().Select(a => new object[] { a });
+
+    // Several liboqs implementations read the signature before checking its length. Verifying an
+    // empty signature used to hand them a NULL pointer and segfault the process (all CROSS and
+    // SLH-DSA parameter sets), and a short one made them read past the end of the managed array.
+    // A regression here kills the test host rather than failing an assertion.
+    [SkippableTheory]
+    [MemberData(nameof(AllSigAlgorithms))]
+    public void Verify_WithMalformedSignatureLength_ShouldReturnFalse(SigAlgorithm algorithm)
+    {
+        LargeStack.Run(() =>
+        {
+            Skip.If(!algorithm.IsEnabled(), $"Algorithm {algorithm} is not enabled in this build.");
+            using var sig = new SigInstance(algorithm);
+
+            var (publicKey, secretKey) = sig.GenerateKeypair();
+            var message = "malformed signature probe"u8.ToArray();
+            var signature = sig.Sign(message, secretKey);
+            Assert.True(sig.Verify(message, signature, publicKey));
+
+            Assert.False(sig.Verify(message, Array.Empty<byte>(), publicKey));
+            Assert.False(sig.Verify(message, new byte[1], publicKey));
+            Assert.False(sig.Verify(message, signature[..^1], publicKey));
+            Assert.False(sig.Verify(message, new byte[sig.MaxSignatureLength + 1], publicKey));
+
+            if (sig.SupportsContextString)
+            {
+                var ctx = "ctx"u8.ToArray();
+                Assert.False(sig.Verify(message, Array.Empty<byte>(), publicKey, ctx));
+                Assert.False(sig.Verify(message, new byte[1], publicKey, ctx));
+            }
+        });
+    }
+
+    // OQS_*_alg_identifier takes a size_t index. Enumerating through the binding also checks that
+    // every identifier this library maps an enum value to is one liboqs actually knows; a
+    // mistyped identifier would otherwise just report "not enabled" and skip its tests.
+    [Fact]
+    public void AlgorithmIdentifiers_ShouldAllBeKnownToLiboqs()
+    {
+        LibOqs.EnsureInitialized();
+
+        var kemCount = Native.Kem.OQS_KEM_alg_count();
+        var nativeKems = new HashSet<string>();
+        for (nuint i = 0; i < (nuint)kemCount; i++)
+        {
+            nativeKems.Add(Marshal.PtrToStringAnsi(Native.Kem.OQS_KEM_alg_identifier(i))!);
+        }
+
+        var sigCount = Native.Sig.OQS_SIG_alg_count();
+        var nativeSigs = new HashSet<string>();
+        for (nuint i = 0; i < (nuint)sigCount; i++)
+        {
+            nativeSigs.Add(Marshal.PtrToStringAnsi(Native.Sig.OQS_SIG_alg_identifier(i))!);
+        }
+
+        Assert.Equal(IntPtr.Zero, Native.Kem.OQS_KEM_alg_identifier((nuint)kemCount));
+        Assert.Equal(IntPtr.Zero, Native.Sig.OQS_SIG_alg_identifier((nuint)sigCount));
+
+        Assert.All(Enum.GetValues<KemAlgorithm>(), a => Assert.Contains(a.GetIdentifier(), nativeKems));
+        Assert.All(Enum.GetValues<SigAlgorithm>(), a => Assert.Contains(a.GetIdentifier(), nativeSigs));
     }
 
     [Fact]
