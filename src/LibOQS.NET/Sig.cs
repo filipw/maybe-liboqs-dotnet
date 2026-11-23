@@ -460,9 +460,29 @@ public class SigInstance : IDisposable
             throw new ArgumentException($"Algorithm {Algorithm} does not support context strings", nameof(ctxStr));
         }
 
+        // No algorithm produces an empty signature or one longer than its maximum, so neither can
+        // be valid. Rejecting them here also keeps a NULL pointer (which is what pinning an empty
+        // array yields) away from native code.
+        if (signature.Length == 0 || signature.Length > MaxSignatureLength)
+        {
+            return false;
+        }
+
+        // Some liboqs implementations read the signature before they check its length: CROSS
+        // parses a full fixed-size signature and SLH-DSA hashes its leading bytes first. A short
+        // signature would make them read past the end of the caller's array, so hand native code
+        // a zero-padded buffer of the maximum length instead. The true length is still what is
+        // passed, so a short signature is still rejected - just without the out-of-bounds read.
+        var signatureBuffer = signature;
+        if (signature.Length < MaxSignatureLength)
+        {
+            signatureBuffer = new byte[MaxSignatureLength];
+            signature.CopyTo(signatureBuffer, 0);
+        }
+
         unsafe
         {
-            fixed (byte* msgPtr = message, sigPtr = signature, pkPtr = publicKey)
+            fixed (byte* msgPtr = message, sigPtr = signatureBuffer, pkPtr = publicKey)
             {
                 Common.OqsStatus result;
                 if (ctxStr != null)
@@ -490,8 +510,9 @@ public class SigInstance : IDisposable
     public void Dispose()
     {
         _disposed = true;
-        // SafeHandle.Dispose is itself idempotent and thread-safe, and waits for any in-flight
-        // P/Invoke that holds a reference to the handle.
+        // SafeHandle.Dispose is itself idempotent and thread-safe. It does not block: if a P/Invoke
+        // on another thread still holds a reference to the handle, the native object is released
+        // when that call returns rather than underneath it.
         _handle.Dispose();
     }
 }

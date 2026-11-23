@@ -94,9 +94,10 @@ if [ -n "$SO_PATH" ]; then
     
     echo "Successfully copied and renamed $SO_BASENAME to liboqs.so in $TARGET_PATH"
 else
-    echo "Warning: Could not find liboqs.so in build output"
-    echo "Build contents:"
-    find . -type f -name "*.so*" -o -name "*.dylib" -o -name "*.dll" | head -20
+    echo "ERROR: Could not find liboqs.so in build output" >&2
+    echo "Build contents:" >&2
+    find . -type f \( -name "*.so*" -o -name "*.dylib" -o -name "*.dll" \) | head -20 >&2
+    exit 1
 fi
 
 echo "Build complete!"

@@ -143,7 +143,7 @@ public static class Sig
     /// Get algorithm identifier by index
     /// </summary>
     [DllImport(Common.LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern IntPtr OQS_SIG_alg_identifier(int alg_index);
+    public static extern IntPtr OQS_SIG_alg_identifier(nuint alg_index);
 
     // Algorithm identifiers - these would typically be const char* from the C library
     public static readonly string OQS_SIG_alg_ml_dsa_44 = "ML-DSA-44";

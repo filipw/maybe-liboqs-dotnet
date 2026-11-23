@@ -21,11 +21,17 @@ public static class Common
         /// Success
         /// </summary>
         Success = 0,
-        
+
         /// <summary>
         /// Error
         /// </summary>
-        Error = -1
+        Error = -1,
+
+        /// <summary>
+        /// Failure in an external library (OpenSSL). Only produced by liboqs builds that use
+        /// OpenSSL, which the binaries shipped in this package do not.
+        /// </summary>
+        ExternalLibErrorOpenSsl = 50
     }
 
     /// <summary>

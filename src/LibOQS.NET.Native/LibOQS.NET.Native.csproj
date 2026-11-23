@@ -1,13 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- The raw bindings mirror liboqs names one-to-one (struct fields, algorithm identifier
+         constants); documenting each of them individually would only repeat the name. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackageId>LibOQS.NET.Native</PackageId>
-    <PackageVersion>0.4.1</PackageVersion>
+    <PackageVersion>0.5.0</PackageVersion>
     <Authors>filipw</Authors>
     <Description>Native P/Invoke bindings for liboqs - a C library for quantum-resistant cryptographic algorithms</Description>
     <PackageProjectUrl>https://github.com/filipw/maybe-liboqs-dotnet</PackageProjectUrl>
@@ -19,26 +23,47 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Pack native libraries into the NuGet package with consistent naming -->
-    <Content Include="../native/runtimes/win-x64/native/oqs.dll" Condition="Exists('../native/runtimes/win-x64/native/oqs.dll')" Pack="true" PackagePath="runtimes/win-x64/native/oqs.dll" />
-    <Content Include="../native/runtimes/win-arm64/native/oqs.dll" Condition="Exists('../native/runtimes/win-arm64/native/oqs.dll')" Pack="true" PackagePath="runtimes/win-arm64/native/oqs.dll" />
-    <Content Include="../native/runtimes/linux-x64/native/liboqs.so" Condition="Exists('../native/runtimes/linux-x64/native/liboqs.so')" Pack="true" PackagePath="runtimes/linux-x64/native/liboqs.so" />
-    <Content Include="../native/runtimes/linux-arm64/native/liboqs.so" Condition="Exists('../native/runtimes/linux-arm64/native/liboqs.so')" Pack="true" PackagePath="runtimes/linux-arm64/native/liboqs.so" />
-    <Content Include="../native/runtimes/linux-musl-x64/native/liboqs.so" Condition="Exists('../native/runtimes/linux-musl-x64/native/liboqs.so')" Pack="true" PackagePath="runtimes/linux-musl-x64/native/liboqs.so" />
-    <Content Include="../native/runtimes/osx/native/liboqs.dylib" Condition="Exists('../native/runtimes/osx/native/liboqs.dylib')" Pack="true" PackagePath="runtimes/osx/native/liboqs.dylib" />
+    <!-- Every native library the published package must carry, keyed by runtime identifier.
+         CI builds each one and drops it at this path before packing. -->
+    <OqsNativeAsset Include="../native/runtimes/win-x64/native/oqs.dll" Rid="win-x64" />
+    <OqsNativeAsset Include="../native/runtimes/win-arm64/native/oqs.dll" Rid="win-arm64" />
+    <OqsNativeAsset Include="../native/runtimes/linux-x64/native/liboqs.so" Rid="linux-x64" />
+    <OqsNativeAsset Include="../native/runtimes/linux-arm64/native/liboqs.so" Rid="linux-arm64" />
+    <OqsNativeAsset Include="../native/runtimes/linux-musl-x64/native/liboqs.so" Rid="linux-musl-x64" />
+    <OqsNativeAsset Include="../native/runtimes/osx-arm64/native/liboqs.dylib" Rid="osx-arm64" />
 
-    <!-- Copy to output directory for local development and testing -->
-    <None Condition="$([MSBuild]::IsOsPlatform('Windows')) And Exists('../native/runtimes/win-x64/native/oqs.dll')" Include="../native/runtimes/win-x64/native/oqs.dll" CopyToOutputDirectory="PreserveNewest" />
-    <None Condition="$([MSBuild]::IsOsPlatform('Windows')) And Exists('../native/runtimes/win-arm64/native/oqs.dll')" Include="../native/runtimes/win-arm64/native/oqs.dll" CopyToOutputDirectory="PreserveNewest" />
-    <None Condition="$([MSBuild]::IsOsPlatform('Linux')) And Exists('../native/runtimes/linux-x64/native/liboqs.so')" Include="../native/runtimes/linux-x64/native/liboqs.so" CopyToOutputDirectory="PreserveNewest" />
-    <None Condition="$([MSBuild]::IsOsPlatform('Linux')) And Exists('../native/runtimes/linux-arm64/native/liboqs.so')" Include="../native/runtimes/linux-arm64/native/liboqs.so" CopyToOutputDirectory="PreserveNewest" />
-    <None Condition="$([MSBuild]::IsOsPlatform('Linux')) And Exists('../native/runtimes/linux-musl-x64/native/liboqs.so')" Include="../native/runtimes/linux-musl-x64/native/liboqs.so" CopyToOutputDirectory="PreserveNewest" />
-    <None Condition="$([MSBuild]::IsOsPlatform('OSX')) And Exists('../native/runtimes/osx/native/liboqs.dylib')" Include="../native/runtimes/osx/native/liboqs.dylib" CopyToOutputDirectory="PreserveNewest" />
-    
-    <!-- Fallback for local development when runtime-specific libraries aren't available -->
-    <None Condition="$([MSBuild]::IsOsPlatform('Windows')) And Exists('../native/oqs.dll')" Include="../native/oqs.dll" CopyToOutputDirectory="PreserveNewest" />
-    <None Condition="$([MSBuild]::IsOsPlatform('Linux')) And Exists('../native/liboqs.so')" Include="../native/liboqs.so" CopyToOutputDirectory="PreserveNewest" />
-    <None Condition="$([MSBuild]::IsOsPlatform('OSX')) And Exists('../native/liboqs.dylib')" Include="../native/liboqs.dylib" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The package redistributes liboqs binaries, so it carries the liboqs license too. -->
+    <OqsLicenseFile Include="../../liboqs/LICENSE.txt" />
+
+    <!-- Pack whichever of them are present. Local builds usually have at most the host's own
+         library; ValidateNativeAssets below makes a release build insist on all of them. -->
+    <None Include="@(OqsNativeAsset->Exists())" Pack="true" PackagePath="runtimes/%(Rid)/native/" Visible="false" />
+    <None Include="@(OqsLicenseFile->Exists())" Pack="true" PackagePath="licenses/liboqs/" Visible="false" />
   </ItemGroup>
+
+  <!-- Local development and testing: copy the library for the machine doing the build next to
+       the assemblies. Prefer the runtime-specific location, and fall back to src/native, which
+       is where the build-dotnet-liboqs scripts put their output by default. -->
+  <PropertyGroup>
+    <_OqsHostLibraryName Condition="$([MSBuild]::IsOsPlatform('Windows'))">oqs.dll</_OqsHostLibraryName>
+    <_OqsHostLibraryName Condition="$([MSBuild]::IsOsPlatform('Linux'))">liboqs.so</_OqsHostLibraryName>
+    <_OqsHostLibraryName Condition="$([MSBuild]::IsOsPlatform('OSX'))">liboqs.dylib</_OqsHostLibraryName>
+    <_OqsHostLibrary>../native/runtimes/$(NETCoreSdkRuntimeIdentifier)/native/$(_OqsHostLibraryName)</_OqsHostLibrary>
+    <_OqsHostLibrary Condition="!Exists('$(_OqsHostLibrary)')">../native/$(_OqsHostLibraryName)</_OqsHostLibrary>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_OqsHostLibraryName)' != '' And Exists('$(_OqsHostLibrary)')">
+    <None Include="$(_OqsHostLibrary)" Link="$(_OqsHostLibraryName)" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+  <!-- Without this, a platform whose native build silently produced nothing would simply be
+       left out of the package. Release builds pass -p:RequireAllNativeAssets=true. -->
+  <Target Name="ValidateNativeAssets" BeforeTargets="GenerateNuspec" Condition="'$(RequireAllNativeAssets)' == 'true'">
+    <ItemGroup>
+      <_OqsRequiredFile Include="@(OqsNativeAsset);@(OqsLicenseFile)" />
+      <_OqsMissingFile Include="@(_OqsRequiredFile)" Condition="!Exists('%(FullPath)')" />
+    </ItemGroup>
+    <Error Condition="'@(_OqsMissingFile)' != ''" Text="Cannot pack $(PackageId): required files are missing: @(_OqsMissingFile, ', ')" />
+  </Target>
 
 </Project>

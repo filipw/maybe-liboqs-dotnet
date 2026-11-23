@@ -29,6 +29,11 @@ cd "$BUILD_DIR"
 
 echo "Configuring CMake for shared library build..."
 
+# Oldest macOS the library will load on. Without this the linker stamps the library with the
+# version of the machine that built it, and it refuses to load on anything older. 14.0 is the
+# oldest release .NET 10 supports; override with MACOSX_DEPLOYMENT_TARGET if needed.
+DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-14.0}"
+
 # Configure with shared library options.
 # OQS_MEMOPT_BUILD makes MQOM use its memory-optimized implementation. The default MQOM
 # implementation needs more than 1 MB of stack to sign, which overflows the stack of
@@ -38,6 +43,7 @@ cmake .. \
     -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DCMAKE_OSX_ARCHITECTURES=arm64 \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET="$DEPLOYMENT_TARGET" \
     -DOQS_USE_OPENSSL=OFF \
     -DOQS_BUILD_ONLY_LIB=ON \
     -DOQS_DIST_BUILD=YES \
@@ -82,9 +88,10 @@ if [ -n "$DYLIB_PATH" ]; then
     
     echo "Successfully copied and renamed $DYLIB_BASENAME to liboqs.dylib in $TARGET_PATH"
 else
-    echo "Warning: Could not find liboqs.dylib in build output"
-    echo "Build contents:"
-    find . -type f -name "*.dylib*" -o -name "*.so*" -o -name "*.dll" | head -20
+    echo "ERROR: Could not find liboqs.dylib in build output" >&2
+    echo "Build contents:" >&2
+    find . -type f \( -name "*.dylib*" -o -name "*.so*" -o -name "*.dll" \) | head -20 >&2
+    exit 1
 fi
 
 echo "Build complete!"

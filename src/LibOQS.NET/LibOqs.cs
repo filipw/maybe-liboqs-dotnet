@@ -5,7 +5,14 @@ namespace LibOQS.NET;
 /// </summary>
 public class OqsException : Exception
 {
+    /// <summary>
+    /// Create an exception with the given message
+    /// </summary>
     public OqsException(string message) : base(message) { }
+
+    /// <summary>
+    /// Create an exception with the given message, wrapping the exception that caused it
+    /// </summary>
     public OqsException(string message, Exception innerException) : base(message, innerException) { }
 }
 
@@ -14,6 +21,9 @@ public class OqsException : Exception
 /// </summary>
 public class AlgorithmNotSupportedException : OqsException
 {
+    /// <summary>
+    /// Create an exception for the liboqs algorithm identifier that is not available
+    /// </summary>
     public AlgorithmNotSupportedException(string algorithm) 
         : base($"Algorithm '{algorithm}' is not supported or not enabled") { }
 }
